@@ -1,0 +1,54 @@
+---
+title: "Customer Satisfaction"
+output: html_document
+date: '2023-03-31'
+---
+Read in the data 
+```{r}
+library(tidyverse)
+library(ggplot2)
+data <- read.csv("Data-Analytics-Emojis-2023/satisfaction_2015.csv", header = TRUE)
+summary(data)
+```
+
+
+Clean the data
+```{r}
+data_clean <- data %>%  
+  select(-c (id,Customer.Type,satisfaction_v2,Departure.Delay.in.Minutes,Arrival.Delay.in.Minutes))  
+  
+data_clean <- data_clean %>%  
+  filter(Type.of.Travel == 'Business travel')
+
+data_clean[data_clean == 0] <- NA
+view(data_clean)
+```
+
+Boxplot for Seat Comfort Rating for each class
+```{r}
+data_clean$Class <- factor(data_clean$Class)
+
+class_levels <- levels(data_clean$Class)
+
+ggplot(data_clean, aes(x = Class, y = Seat.comfort)) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of seat comfort by class") +
+  xlab("Class") +
+  ylab("Seat comfort rating") +
+  scale_x_discrete(labels = class_levels)
+```
+
+Calculate significance for Seat Comfort rating for each class
+```{r}
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Seat.comfort ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+install.packages('dunn.test')
+library(dunn.test)
+dunn <- dunn.test(data_clean$Seat.comfort, data_clean$Class, method = "holm")
+dunn
+```
+
