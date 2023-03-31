@@ -3,6 +3,48 @@ title: "Customer Satisfaction"
 output: html_document
 date: '2023-03-31'
 ---
+PROBLEMS/ QUESTION
+- For the boxplot R removes all rows with NA...
+- Are rows with NA also removed for the sig test?
+- Evtl. sig alle nochmals metrisch berechnen? 
+- Müssten Effektstärken auch noch berechnen. Means sind manchmal soo nahe beieinander 
+
+
+SIG. DIFFERENCE HIGHER RATINGS FOR BUSINESS COMPARED TO ECO (median difference)
+- Seat.comfort
+- Inflight.wifi.service 
+- Departure.Arrival.time.convenient (why though hahaha)
+- Online.booking
+- Food.and.drink
+- Online.boarding
+- Inflight.entertainment
+- On.board.service
+- Leg.room.service
+- Baggage.handling
+- Checkin.service
+- Inflight.service
+- Cleanliness
+
+--> nur die Variablen nehmen, die auch Sinn fürs Marketing machen 
+
+
+
+ECO BETTER THAN BUSINESS (sig.)
+- Gate Location 
+
+SIG. DIFFERENCE BETWEEN ECO AND ECO PLUS
+- Inflight wifi 
+- Online booking
+- Online boarding
+- On.board.service
+- Baggage.handling
+- Checkin.service
+- Inflight.service
+
+
+
+
+
 Read in the data 
 ```{r}
 library(tidyverse)
@@ -22,13 +64,23 @@ data_clean <- data_clean %>%
 
 data_clean[data_clean == 0] <- NA
 view(data_clean)
-```
 
-Boxplot for Seat Comfort Rating for each class
-```{r}
+#Class as factor + levels 
 data_clean$Class <- factor(data_clean$Class)
 
 class_levels <- levels(data_clean$Class)
+```
+
+Boxplots and Significance Test for Seat Comfort Rating for each class
+```{r}
+# Calculate median for each group of 'class'
+medians_seat.comfort <- aggregate(Seat.comfort ~ Class, data = data_clean, median)
+medians_seat.comfort
+
+means_seat.comfort <- aggregate(Seat.comfort ~ Class, data = data_clean, mean)
+means_seat.comfort
+
+#Boxplot
 
 ggplot(data_clean, aes(x = Class, y = Seat.comfort)) + 
   geom_boxplot(fill = "gray", color = "black") +
@@ -37,10 +89,8 @@ ggplot(data_clean, aes(x = Class, y = Seat.comfort)) +
   xlab("Class") +
   ylab("Seat comfort rating") +
   scale_x_discrete(labels = class_levels)
-```
 
-Calculate significance for Seat Comfort rating for each class
-```{r}
+
 # Perform Kruskal-Wallis test
 kw <- kruskal.test(Seat.comfort ~ Class, data = data_clean)
 kw
@@ -50,5 +100,380 @@ install.packages('dunn.test')
 library(dunn.test)
 dunn <- dunn.test(data_clean$Seat.comfort, data_clean$Class, method = "holm")
 dunn
+
+#Conclusion
+## Business class has sig. higher ratings for seat comfort than eco
+## No sig. difference between eco and eco plus
 ```
 
+Boxplots and Significance Test for Wifi for each class
+```{r}
+# Calculate median for each group of 'class'
+medians_wifi <- aggregate(Inflight.wifi.service ~ Class, data = data_clean, median)
+medians_wifi
+
+means_wifi <- aggregate(Inflight.wifi.service ~ Class, data = data_clean, mean)
+means_wifi 
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Inflight.wifi.service)) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of inflight wifi service by class") +
+  xlab("Class") +
+  ylab("Inflight wifi service rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Inflight.wifi.service ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Inflight.wifi.service, data_clean$Class, method = "holm")
+dunn
+```
+Boxplots and Significance Test for Time Convenience for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_time_convenience <- aggregate(Departure.Arrival.time.convenient ~ Class, data = data_clean, median)
+medians_time_convenience 
+
+means_time_convenience <- aggregate(Departure.Arrival.time.convenient ~ Class, data = data_clean, mean)
+means_time_convenience 
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Departure.Arrival.time.convenient)) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of time convenience  by class") +
+  xlab("Class") +
+  ylab("Time convenience rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Departure.Arrival.time.convenient ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Departure.Arrival.time.convenient, data_clean$Class, method = "holm")
+dunn
+```
+Boxplots and Significance Test for Ease of Online booking for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_online_booking <- aggregate(Ease.of.Online.booking ~ Class, data = data_clean, median)
+medians_online_booking 
+
+means_online_booking <- aggregate(Ease.of.Online.booking  ~ Class, data = data_clean, mean)
+means_online_booking
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Ease.of.Online.booking )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of ease of online booking  by class") +
+  xlab("Class") +
+  ylab("ease of online booking rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Ease.of.Online.booking  ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Ease.of.Online.booking , data_clean$Class, method = "holm")
+dunn
+```
+Boxplots and Significance Test for Gate location for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_gate_location <- aggregate(Gate.location ~ Class, data = data_clean, median)
+medians_gate_location  
+
+means_gate_location  <- aggregate(Gate.location  ~ Class, data = data_clean, mean)
+means_gate_location 
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Gate.location )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of gate location  by class") +
+  xlab("Class") +
+  ylab("gate location rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Gate.location  ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Gate.location , data_clean$Class, method = "holm")
+dunn
+```
+Boxplots and Significance Test for Food and drinks for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_food_drink <- aggregate(Food.and.drink ~ Class, data = data_clean, median)
+medians_food_drink  
+
+means_food_drink  <- aggregate(Food.and.drink  ~ Class, data = data_clean, mean)
+means_food_drink
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Food.and.drink )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of food and drink rating  by class") +
+  xlab("Class") +
+  ylab("food and drink rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Food.and.drink  ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Food.and.drink , data_clean$Class, method = "holm")
+dunn
+```
+Boxplots and Significance Test for Online boarding for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_online_boarding <- aggregate(Online.boarding ~ Class, data = data_clean, median)
+medians_online_boarding 
+
+means_online_boarding  <- aggregate(Online.boarding   ~ Class, data = data_clean, mean)
+means_online_boarding
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Online.boarding  )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of online boarding rating  by class") +
+  xlab("Class") +
+  ylab("online boarding rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Online.boarding  ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Online.boarding, data_clean$Class, method = "holm")
+dunn
+```
+
+Boxplots and Significance Test for inflight entertainment for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_entertainment <- aggregate(Inflight.entertainment ~ Class, data = data_clean, median)
+medians_entertainment 
+
+means_entertainment <- aggregate(Inflight.entertainment ~ Class, data = data_clean, mean)
+means_entertainment 
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Inflight.entertainment)) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of entertainment by class") +
+  xlab("Class") +
+  ylab("entertainment rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Inflight.entertainment ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Inflight.entertainment, data_clean$Class, method = "holm")
+dunn
+```
+
+Boxplots and Significance Test for on board service for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_board_service <- aggregate(On.board.service ~ Class, data = data_clean, median)
+medians_board_service
+
+means_board_service<- aggregate(On.board.service  ~ Class, data = data_clean, mean)
+means_board_service
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = On.board.service )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of board service by class") +
+  xlab("Class") +
+  ylab("board service rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(On.board.service  ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$On.board.service , data_clean$Class, method = "holm")
+dunn
+```
+
+Boxplots and Significance Test for legroom service for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_legroom <- aggregate(Leg.room.service ~ Class, data = data_clean, median)
+medians_legroom
+
+means_legroom<- aggregate(Leg.room.service ~ Class, data = data_clean, mean)
+means_legroom
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Leg.room.service )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of leg room by class") +
+  xlab("Class") +
+  ylab("leg room rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Leg.room.service ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Leg.room.service , data_clean$Class, method = "holm")
+dunn
+```
+
+Boxplots and Significance Test for baggage handling for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_baggage <- aggregate(Baggage.handling ~ Class, data = data_clean, median)
+medians_baggage
+
+means_baggage <- aggregate(Baggage.handling ~ Class, data = data_clean, mean)
+means_baggage
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Baggage.handling )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of baggage handling by class") +
+  xlab("Class") +
+  ylab("baggage handling rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Baggage.handling ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Baggage.handling , data_clean$Class, method = "holm")
+dunn
+```
+
+Boxplots and Significance Test for check in service for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_checkin <- aggregate(Checkin.service ~ Class, data = data_clean, median)
+medians_checkin
+
+means_checkin <- aggregate(Checkin.service ~ Class, data = data_clean, mean)
+means_checkin
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Checkin.service )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of check-in service by class") +
+  xlab("Class") +
+  ylab("check-in service rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Checkin.service ~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Checkin.service, data_clean$Class, method = "holm")
+dunn
+```
+
+Boxplots and Significance Test for inflight service for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_inflight_service <- aggregate(Inflight.service ~ Class, data = data_clean, median)
+medians_inflight_service
+
+means_inflight_service <- aggregate(Inflight.service ~ Class, data = data_clean, mean)
+means_inflight_service
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Inflight.service )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of inflight service by class") +
+  xlab("Class") +
+  ylab("inflight service rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Inflight.service~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Inflight.service, data_clean$Class, method = "holm")
+dunn
+```
+
+Boxplots and Significance Test for cleanliness for each class
+```{r}
+# Calculate median and mean for each group of 'class'
+medians_cleanliness <- aggregate(Cleanliness ~ Class, data = data_clean, median)
+medians_cleanliness 
+
+means_cleanliness <- aggregate(Cleanliness ~ Class, data = data_clean, mean)
+means_cleanliness 
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Inflight.service )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of cleanliness by class") +
+  xlab("Class") +
+  ylab("cleanliness rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Perform Kruskal-Wallis test
+kw <- kruskal.test(Cleanliness~ Class, data = data_clean)
+kw
+
+# Post-hoc tests using Dunn's test
+
+dunn <- dunn.test(data_clean$Cleanliness, data_clean$Class, method = "holm")
+dunn
+```
