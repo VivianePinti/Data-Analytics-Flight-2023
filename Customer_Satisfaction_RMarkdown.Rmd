@@ -17,6 +17,8 @@ DOCUMENTATION
 
 QUESTIONS FOR MEETING
 - Median or mean? treat data as ordinal scaled or interval scaled? 
+- how to add median into the plots?
+- How to change the labbels of 1-5 to 1 = not satisfied at all, 5 = very satisfied & also delete NA? 
 
 
 SIG. DIFFERENCE HIGHER RATINGS FOR BUSINESS COMPARED TO ECO (median difference)
@@ -162,6 +164,7 @@ print(d_1)
 # Calculate median for each group of 'class'
 medians_seat.comfort <- aggregate(Seat.comfort ~ Class, data = data_clean, median)
 medians_seat.comfort
+print(medians_seat.comfort)
 
 means_seat.comfort <- aggregate(Seat.comfort ~ Class, data = data_clean, mean)
 means_seat.comfort
@@ -667,4 +670,29 @@ kw
 
 dunn <- dunn.test(data_clean$Cleanliness, data_clean$Class, method = "holm")
 dunn
+```
+
+
+
+Visualisation - Ideas
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+
+# Convert satisfaction_ratings_for_comfort to a factor variable with ordered levels
+data_clean$Seat.comfort <- factor(data_clean$Seat.comfort, levels = 1:5, ordered = TRUE)
+
+# Group data by Class and satisfaction_ratings_for_comfort, and calculate proportions
+data_grouped <- data_clean %>%
+  group_by(Class, Seat.comfort) %>%
+  summarize(Count = n()) %>%
+  mutate(Proportion = Count / sum(Count))
+
+# Create stacked bar chart with ggplot2
+ggplot(data_grouped, aes(x = Class, y = Proportion, fill = Seat.comfort, desc_stat = 'median')) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Class", y = "Proportion", fill = "Satisfaction Ratings for Seat Comfort")
+ 
 ```
