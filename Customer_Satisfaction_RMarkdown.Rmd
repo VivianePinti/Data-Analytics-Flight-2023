@@ -3,11 +3,20 @@ title: "Customer Satisfaction"
 output: html_document
 date: '2023-03-31'
 ---
-PROBLEMS/ QUESTION
-- For the boxplot R removes all rows with NA...
-- Are rows with NA also removed for the sig test?
-- Evtl. sig alle nochmals metrisch berechnen? 
-- Müssten Effektstärken auch noch berechnen. Means sind manchmal soo nahe beieinander 
+TO DO
+- Variablen anhand effect sizes auswählen
+- neue median berechnungen  machen
+- visualisierungen der ausgewählten variblen machen
+- R markdown dokumentieren --> text auschreiben was wir wieso gemacht haben
+
+
+DOCUMENTATION
+- For each variable Na's are dropped 
+- Eco plus deleted
+
+
+QUESTIONS FOR MEETING
+- Median or mean? treat data as ordinal scaled or interval scaled? 
 
 
 SIG. DIFFERENCE HIGHER RATINGS FOR BUSINESS COMPARED TO ECO (median difference)
@@ -25,12 +34,10 @@ SIG. DIFFERENCE HIGHER RATINGS FOR BUSINESS COMPARED TO ECO (median difference)
 - Inflight.service
 - Cleanliness
 
---> nur die Variablen nehmen, die auch Sinn fürs Marketing machen 
-
-
 
 ECO BETTER THAN BUSINESS (sig.)
 - Gate Location 
+- Wifi??
 
 SIG. DIFFERENCE BETWEEN ECO AND ECO PLUS
 - Inflight wifi 
@@ -42,6 +49,71 @@ SIG. DIFFERENCE BETWEEN ECO AND ECO PLUS
 - Inflight.service
 
 
+Effect Sizes for the different variables in order 
+```{r}
+
+# MEDIUM 
+
+# Seat.comfort 
+## 0.54 medium
+print(d_1)
+
+# Online.boarding
+## 0.71 medium
+print(d_7)
+
+# On.board.service
+## 0.65 medium
+print(d_9)
+
+# Baggage.handling
+## 0.54 medium
+print(d_11)
+
+# Checkin.service
+## 0.56 medium
+print(d_12)
+
+# Inflight.service
+## 0.54 medium
+print(d_13)
+
+##################
+# small and negligible 
+
+# Inflight.wifi.service 
+## -0.02 negligible
+print(d_2)
+
+# Departure.Arrival.time.convenient 
+##0.07 negligible
+print(d_3)
+
+# Online.booking
+##0.15 negligible
+print(d_4)
+
+# Gate.location
+##-0.03 negligible
+print(d_5)
+
+# Food.and.drink
+## 0.17 negligible 
+print(d_6)
+
+# Inflight.entertainment
+## 0.411 small 
+print(d_8)
+
+# Leg.room.service
+## 0.49 small
+print(d_10)
+
+# Cleanliness
+## 0.31 small
+print(d_14)
+
+```
 
 
 
@@ -49,7 +121,10 @@ Read in the data
 ```{r}
 library(tidyverse)
 library(ggplot2)
-data <- read.csv("Data-Analytics-Emojis-2023/satisfaction_2015.csv", header = TRUE)
+library(effsize)
+library(dplyr)
+
+data <- read.csv("satisfaction_2015.csv", header = TRUE)
 summary(data)
 ```
 
@@ -60,7 +135,7 @@ data_clean <- data %>%
   select(-c (id,Customer.Type,satisfaction_v2,Departure.Delay.in.Minutes,Arrival.Delay.in.Minutes))  
   
 data_clean <- data_clean %>%  
-  filter(Type.of.Travel == 'Business travel')
+  filter(Type.of.Travel == 'Business travel' & Class != 'Eco Plus')
 
 data_clean[data_clean == 0] <- NA
 view(data_clean)
@@ -73,6 +148,17 @@ class_levels <- levels(data_clean$Class)
 
 Boxplots and Significance Test for Seat Comfort Rating for each class
 ```{r}
+
+# T Test metric
+
+results_t_1 <- t.test(Seat.comfort ~ Class , data = data_clean)
+print(results_t_1)
+
+# Calculate Effect size 
+d_1 <- cohen.d(data_clean$Seat.comfort ~ data_clean$Class, pooled = TRUE)
+print(d_1)
+
+
 # Calculate median for each group of 'class'
 medians_seat.comfort <- aggregate(Seat.comfort ~ Class, data = data_clean, median)
 medians_seat.comfort
@@ -108,6 +194,14 @@ dunn
 
 Boxplots and Significance Test for Wifi for each class
 ```{r}
+# T Test metric
+results_t_2 <- t.test(Inflight.wifi.service ~ Class , data = data_clean)
+print(results_t_2)
+
+# Calculate Effect size 
+d_2 <- cohen.d(data_clean$Inflight.wifi.service ~ data_clean$Class, pooled = TRUE)
+print(d_2)
+
 # Calculate median for each group of 'class'
 medians_wifi <- aggregate(Inflight.wifi.service ~ Class, data = data_clean, median)
 medians_wifi
@@ -136,6 +230,14 @@ dunn
 ```
 Boxplots and Significance Test for Time Convenience for each class
 ```{r}
+# T Test metric
+results_t_3 <- t.test(Departure.Arrival.time.convenient ~ Class , data = data_clean)
+print(results_t_3)
+
+# Calculate Effect size 
+d_3 <- cohen.d(data_clean$Departure.Arrival.time.convenient ~ data_clean$Class, pooled = TRUE)
+print(d_3)
+
 # Calculate median and mean for each group of 'class'
 medians_time_convenience <- aggregate(Departure.Arrival.time.convenient ~ Class, data = data_clean, median)
 medians_time_convenience 
@@ -164,6 +266,15 @@ dunn
 ```
 Boxplots and Significance Test for Ease of Online booking for each class
 ```{r}
+
+# T Test metric
+results_t_4 <- t.test(Ease.of.Online.booking ~ Class , data = data_clean)
+print(results_t_4)
+
+# Calculate Effect size 
+d_4 <- cohen.d(data_clean$Ease.of.Online.booking ~ data_clean$Class, pooled = TRUE)
+print(d_4)
+
 # Calculate median and mean for each group of 'class'
 medians_online_booking <- aggregate(Ease.of.Online.booking ~ Class, data = data_clean, median)
 medians_online_booking 
@@ -192,6 +303,14 @@ dunn
 ```
 Boxplots and Significance Test for Gate location for each class
 ```{r}
+# T Test metric
+results_t_5 <- t.test(Gate.location ~ Class , data = data_clean)
+print(results_t_5)
+
+# Calculate Effect size 
+d_5 <- cohen.d(data_clean$Gate.location~ data_clean$Class, pooled = TRUE)
+print(d_5)
+
 # Calculate median and mean for each group of 'class'
 medians_gate_location <- aggregate(Gate.location ~ Class, data = data_clean, median)
 medians_gate_location  
@@ -220,6 +339,14 @@ dunn
 ```
 Boxplots and Significance Test for Food and drinks for each class
 ```{r}
+# T Test metric
+results_t_6 <- t.test(Food.and.drink ~ Class , data = data_clean)
+print(results_t_6)
+
+# Calculate Effect size 
+d_6 <- cohen.d(data_clean$Food.and.drink~ data_clean$Class, pooled = TRUE)
+print(d_6)
+
 # Calculate median and mean for each group of 'class'
 medians_food_drink <- aggregate(Food.and.drink ~ Class, data = data_clean, median)
 medians_food_drink  
@@ -248,6 +375,14 @@ dunn
 ```
 Boxplots and Significance Test for Online boarding for each class
 ```{r}
+# T Test metric
+results_t_7 <- t.test(Online.boarding ~ Class , data = data_clean)
+print(results_t_7)
+
+# Calculate Effect size 
+d_7 <- cohen.d(data_clean$Online.boarding~ data_clean$Class, pooled = TRUE)
+print(d_7)
+
 # Calculate median and mean for each group of 'class'
 medians_online_boarding <- aggregate(Online.boarding ~ Class, data = data_clean, median)
 medians_online_boarding 
@@ -277,6 +412,14 @@ dunn
 
 Boxplots and Significance Test for inflight entertainment for each class
 ```{r}
+# T Test metric
+results_t_8 <- t.test(Inflight.entertainment ~ Class , data = data_clean)
+print(results_t_8)
+
+# Calculate Effect size 
+d_8 <- cohen.d(data_clean$Inflight.entertainment~ data_clean$Class, pooled = TRUE)
+print(d_8)
+
 # Calculate median and mean for each group of 'class'
 medians_entertainment <- aggregate(Inflight.entertainment ~ Class, data = data_clean, median)
 medians_entertainment 
@@ -306,6 +449,14 @@ dunn
 
 Boxplots and Significance Test for on board service for each class
 ```{r}
+# T Test metric
+results_t_9 <- t.test(On.board.service ~ Class , data = data_clean)
+print(results_t_9)
+
+# Calculate Effect size 
+d_9 <- cohen.d(data_clean$On.board.service~ data_clean$Class, pooled = TRUE)
+print(d_9)
+
 # Calculate median and mean for each group of 'class'
 medians_board_service <- aggregate(On.board.service ~ Class, data = data_clean, median)
 medians_board_service
@@ -335,6 +486,14 @@ dunn
 
 Boxplots and Significance Test for legroom service for each class
 ```{r}
+# T Test metric
+results_t_10 <- t.test(Leg.room.service  ~ Class , data = data_clean)
+print(results_t_10)
+
+# Calculate Effect size 
+d_10 <- cohen.d(data_clean$Leg.room.service ~ data_clean$Class, pooled = TRUE)
+print(d_10)
+
 # Calculate median and mean for each group of 'class'
 medians_legroom <- aggregate(Leg.room.service ~ Class, data = data_clean, median)
 medians_legroom
@@ -364,6 +523,14 @@ dunn
 
 Boxplots and Significance Test for baggage handling for each class
 ```{r}
+# T Test metric
+results_t_11 <- t.test(Baggage.handling  ~ Class , data = data_clean)
+print(results_t_11)
+
+# Calculate Effect size 
+d_11 <- cohen.d(data_clean$Baggage.handling ~ data_clean$Class, pooled = TRUE)
+print(d_11)
+
 # Calculate median and mean for each group of 'class'
 medians_baggage <- aggregate(Baggage.handling ~ Class, data = data_clean, median)
 medians_baggage
@@ -393,6 +560,14 @@ dunn
 
 Boxplots and Significance Test for check in service for each class
 ```{r}
+# T Test metric
+results_t_12 <- t.test(Checkin.service  ~ Class , data = data_clean)
+print(results_t_12)
+
+# Calculate Effect size 
+d_12 <- cohen.d(data_clean$Checkin.service ~ data_clean$Class, pooled = TRUE)
+print(d_12)
+
 # Calculate median and mean for each group of 'class'
 medians_checkin <- aggregate(Checkin.service ~ Class, data = data_clean, median)
 medians_checkin
@@ -422,6 +597,14 @@ dunn
 
 Boxplots and Significance Test for inflight service for each class
 ```{r}
+# T Test metric
+results_t_13 <- t.test(Inflight.service ~ Class , data = data_clean)
+print(results_t_13)
+
+# Calculate Effect size 
+d_13 <- cohen.d(data_clean$Inflight.service ~ data_clean$Class, pooled = TRUE)
+print(d_13)
+
 # Calculate median and mean for each group of 'class'
 medians_inflight_service <- aggregate(Inflight.service ~ Class, data = data_clean, median)
 medians_inflight_service
@@ -451,6 +634,14 @@ dunn
 
 Boxplots and Significance Test for cleanliness for each class
 ```{r}
+# T Test metric
+results_t_14 <- t.test(Cleanliness ~ Class , data = data_clean)
+print(results_t_14)
+
+# Calculate Effect size 
+d_14 <- cohen.d(data_clean$Cleanliness~ data_clean$Class, pooled = TRUE)
+print(d_14)
+
 # Calculate median and mean for each group of 'class'
 medians_cleanliness <- aggregate(Cleanliness ~ Class, data = data_clean, median)
 medians_cleanliness 
