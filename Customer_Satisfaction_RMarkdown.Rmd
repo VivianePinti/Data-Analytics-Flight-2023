@@ -222,14 +222,13 @@ ggplot(data_clean, aes(x = Class, y = Inflight.wifi.service)) +
   scale_x_discrete(labels = class_levels)
 
 
-# Perform Kruskal-Wallis test
-kw <- kruskal.test(Inflight.wifi.service ~ Class, data = data_clean)
-kw
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Inflight.wifi.service ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
 
-# Post-hoc tests using Dunn's test
-
-dunn <- dunn.test(data_clean$Inflight.wifi.service, data_clean$Class, method = "holm")
-dunn
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Inflight.wifi.service, data_clean$Class, p.adjust.method = "bonferroni")
+wil
 ```
 Boxplots and Significance Test for Time Convenience for each class
 ```{r}
