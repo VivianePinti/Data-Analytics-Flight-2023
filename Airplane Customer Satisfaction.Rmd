@@ -37,7 +37,6 @@ library(dplyr)
 
 Read in the data 
 ```{r}
-
 data <- read.csv("satisfaction_2015.csv", header = TRUE)
 summary(data)
 ```
@@ -82,19 +81,19 @@ means_seat.comfort
 
 results_t_1 <- t.test(Seat.comfort ~ Class , data = data_clean)
 print(results_t_1)
+
 ##Calculate Effect size 
 d_seatC <- cohen.d(data_clean$Seat.comfort ~ data_clean$Class, pooled = TRUE)
 print(d_seatC)
 ### 0.54 medium
 
-# Ordinal: perform Kruskal-Wallis test
-kw <- kruskal.test(Seat.comfort ~ Class, data = data_clean)
-kw
-## Post-hoc tests using Dunn's test
-install.packages('dunn.test')
-library(dunn.test)
-dunn <- dunn.test(data_clean$Seat.comfort, data_clean$Class, method = "holm")
-dunn
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Seat.comfort ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Seat.comfort, data_clean$Class, p.adjust.method = "bonferroni")
+wil
 
 # Visualization of the distribution 
 ## Convert satisfaction_ratings_for_comfort to a factor variable with ordered levels
@@ -116,7 +115,6 @@ ggplot(data_grouped, aes(x = Class, y = Proportion, fill = Seat.comfort, desc_st
 2) Online Boarding Satisfaction Rating 
 
 ```{r}
-
 # Meadian and mean for each group of 'class'
 medians_online_boarding <- aggregate(Online.boarding ~ Class, data = data_clean, median)
 medians_online_boarding 
@@ -129,15 +127,16 @@ results_t_2 <- t.test(Online.boarding ~ Class , data = data_clean)
 print(results_t_2)
 ## Calculate Effect size 
 d_Oboarding <- cohen.d(data_clean$Online.boarding~ data_clean$Class, pooled = TRUE)
-print(d_oboarding)
+print(d_Oboarding)
 ### 0.71 medium
 
-# ordinal: perform Kruskal-Wallis test
-kw <- kruskal.test(Online.boarding  ~ Class, data = data_clean)
-kw
-##Post-hoc tests using Dunn's test
-dunn <- dunn.test(data_clean$Online.boarding, data_clean$Class, method = "holm")
-dunn
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Online.boarding ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Online.boarding, data_clean$Class, p.adjust.method = "bonferroni")
+wil
 
 # Visualization of the distribution 
 ```
@@ -160,12 +159,13 @@ d_Oservice <- cohen.d(data_clean$On.board.service~ data_clean$Class, pooled = TR
 print(d_Oservice)
 ###0.65 medium
 
-# Oridanl: Perform Kruskal-Wallis test
-kw <- kruskal.test(On.board.service  ~ Class, data = data_clean)
-kw
-##Post-hoc tests using Dunn's test
-dunn <- dunn.test(data_clean$On.board.service , data_clean$Class, method = "holm")
-dunn
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(On.board.service ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$On.board.service, data_clean$Class, p.adjust.method = "bonferroni")
+wil
 
 # Visualization of the distribution 
 ```
@@ -188,12 +188,13 @@ d_baggage <- cohen.d(data_clean$Baggage.handling ~ data_clean$Class, pooled = TR
 print(d_baggage)
 ### 0.54 medium
 
-# Ordinal: Perform Kruskal-Wallis test
-kw <- kruskal.test(Baggage.handling ~ Class, data = data_clean)
-kw
-## Post-hoc tests using Dunn's test
-dunn <- dunn.test(data_clean$Baggage.handling , data_clean$Class, method = "holm")
-dunn
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Baggage.handling ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Baggage.handling, data_clean$Class, p.adjust.method = "bonferroni")
+wil
 
 # Visualization of the distribution 
 ```
@@ -215,12 +216,14 @@ print(results_t_5)
 d_checkIn <- cohen.d(data_clean$Checkin.service ~ data_clean$Class, pooled = TRUE)
 print(d_checkIn)
 ### 0.56 medium
-# Ordinal: Perform Kruskal-Wallis test
-kw <- kruskal.test(Checkin.service ~ Class, data = data_clean)
-kw
-## Post-hoc tests using Dunn's test
-dunn <- dunn.test(data_clean$Checkin.service, data_clean$Class, method = "holm")
-dunn
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Checkin.service ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Checkin.service, data_clean$Class, p.adjust.method = "bonferroni")
+wil
 
 # Visualization of the distribution 
 ```
@@ -238,17 +241,19 @@ means_inflight_service
 # Metric: T Test 
 results_t_6 <- t.test(Inflight.service ~ Class , data = data_clean)
 print(results_t_6)
+
 ## Calculate Effect size 
 d_flightSer<- cohen.d(data_clean$Inflight.service ~ data_clean$Class, pooled = TRUE)
 print(d_flightSer)
 ### 0.54 medium
 
-# Ordinal: Perform Kruskal-Wallis test
-kw <- kruskal.test(Inflight.service~ Class, data = data_clean)
-kw
-## Post-hoc tests using Dunn's test
-dunn <- dunn.test(data_clean$Inflight.service, data_clean$Class, method = "holm")
-dunn
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Inflight.service ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Inflight.service, data_clean$Class, p.adjust.method = "bonferroni")
+wil
 
 # Visualization of the distribution 
 ```
