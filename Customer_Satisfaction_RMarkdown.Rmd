@@ -388,7 +388,7 @@ print(d_7)
 
 # Calculate median and mean for each group of 'class'
 medians_online_boarding <- aggregate(Online.boarding ~ Class, data = data_clean, median)
-medians_online_boarding 
+medians_online_boarding
 
 means_online_boarding  <- aggregate(Online.boarding   ~ Class, data = data_clean, mean)
 means_online_boarding
