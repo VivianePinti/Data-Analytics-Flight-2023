@@ -1,0 +1,759 @@
+---
+title: "Customer Satisfaction"
+output: html_document
+date: '2023-03-31'
+---
+TO DO
+- Variablen anhand effect sizes auswählen
+- neue median berechnungen  machen
+- visualisierungen der ausgewählten variblen machen
+- R markdown dokumentieren --> text auschreiben was wir wieso gemacht haben
+
+
+DOCUMENTATION
+- For each variable Na's are dropped 
+- Eco plus deleted
+
+
+QUESTIONS FOR MEETING
+- Median or mean? treat data as ordinal scaled or interval scaled? 
+- how to add median into the plots?
+- How to change the labbels of 1-5 to 1 = not satisfied at all, 5 = very satisfied & also delete NA? 
+
+
+SIG. DIFFERENCE HIGHER RATINGS FOR BUSINESS COMPARED TO ECO (median difference)
+- Seat.comfort
+- Inflight.wifi.service 
+- Departure.Arrival.time.convenient (why though hahaha)
+- Online.booking
+- Food.and.drink
+- Online.boarding
+- Inflight.entertainment
+- On.board.service
+- Leg.room.service
+- Baggage.handling
+- Checkin.service
+- Inflight.service
+- Cleanliness
+
+
+ECO BETTER THAN BUSINESS (sig.)
+- Gate Location 
+- Wifi??
+
+SIG. DIFFERENCE BETWEEN ECO AND ECO PLUS
+- Inflight wifi 
+- Online booking
+- Online boarding
+- On.board.service
+- Baggage.handling
+- Checkin.service
+- Inflight.service
+
+
+Effect Sizes for the different variables in order 
+```{r}
+
+# MEDIUM 
+
+# Seat.comfort 
+## 0.54 medium
+print(d_1)
+
+# Online.boarding
+## 0.71 medium
+print(d_7)
+
+# On.board.service
+## 0.65 medium
+print(d_9)
+
+# Baggage.handling
+## 0.54 medium
+print(d_11)
+
+# Checkin.service
+## 0.56 medium
+print(d_12)
+
+# Inflight.service
+## 0.54 medium
+print(d_13)
+
+##################
+# small and negligible 
+
+# Inflight.wifi.service 
+## -0.02 negligible
+print(d_2)
+
+# Departure.Arrival.time.convenient 
+##0.07 negligible
+print(d_3)
+
+# Online.booking
+##0.15 negligible
+print(d_4)
+
+# Gate.location
+##-0.03 negligible
+print(d_5)
+
+# Food.and.drink
+## 0.17 negligible 
+print(d_6)
+
+# Inflight.entertainment
+## 0.411 small 
+print(d_8)
+
+# Leg.room.service
+## 0.49 small
+print(d_10)
+
+# Cleanliness
+## 0.31 small
+print(d_14)
+
+```
+
+
+
+Read in the data 
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(effsize)
+library(dplyr)
+
+data <- read.csv("satisfaction_2015.csv", header = TRUE)
+summary(data)
+```
+
+
+Clean the data
+```{r}
+data_clean <- data %>%  
+  select(-c (id,Customer.Type,satisfaction_v2,Departure.Delay.in.Minutes,Arrival.Delay.in.Minutes))  
+  
+data_clean <- data_clean %>%  
+  filter(Type.of.Travel == 'Business travel' & Class != 'Eco Plus')
+
+data_clean[data_clean == 0] <- NA
+view(data_clean)
+
+#Class as factor + levels 
+data_clean$Class <- factor(data_clean$Class)
+
+class_levels <- levels(data_clean$Class)
+```
+
+Boxplots and Significance Test for Seat Comfort Rating for each class
+```{r}
+
+# T Test metric
+results_t_1 <- t.test(Seat.comfort ~ Class , data = data_clean)
+print(results_t_1)
+
+# Calculate Effect size 
+d_1 <- cohen.d(data_clean$Seat.comfort ~ data_clean$Class, pooled = TRUE)
+print(d_1)
+
+
+# Calculate median for each group of 'class'
+medians_seat.comfort <- aggregate(Seat.comfort ~ Class, data = data_clean, median)
+medians_seat.comfort
+print(medians_seat.comfort)
+
+means_seat.comfort <- aggregate(Seat.comfort ~ Class, data = data_clean, mean)
+means_seat.comfort
+
+#Boxplot
+
+ggplot(data_clean, aes(x = Class, y = Seat.comfort)) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of seat comfort by class") +
+  xlab("Class") +
+  ylab("Seat comfort rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Seat.comfort ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Seat.comfort, data_clean$Class, p.adjust.method = "bonferroni")
+wil
+
+#Conclusion
+## Business class has sig. higher ratings for seat comfort than eco
+```
+
+Boxplots and Significance Test for Wifi for each class
+```{r}
+# T Test metric
+results_t_2 <- t.test(Inflight.wifi.service ~ Class , data = data_clean)
+print(results_t_2)
+
+# Calculate Effect size 
+d_2 <- cohen.d(data_clean$Inflight.wifi.service ~ data_clean$Class, pooled = TRUE)
+print(d_2)
+
+# Calculate median for each group of 'class'
+medians_wifi <- aggregate(Inflight.wifi.service ~ Class, data = data_clean, median)
+medians_wifi
+
+means_wifi <- aggregate(Inflight.wifi.service ~ Class, data = data_clean, mean)
+means_wifi 
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Inflight.wifi.service)) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of inflight wifi service by class") +
+  xlab("Class") +
+  ylab("Inflight wifi service rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Inflight.wifi.service ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Inflight.wifi.service, data_clean$Class, p.adjust.method = "bonferroni")
+wil
+```
+Boxplots and Significance Test for Time Convenience for each class
+```{r}
+# T Test metric
+results_t_3 <- t.test(Departure.Arrival.time.convenient ~ Class , data = data_clean)
+print(results_t_3)
+
+# Calculate Effect size 
+d_3 <- cohen.d(data_clean$Departure.Arrival.time.convenient ~ data_clean$Class, pooled = TRUE)
+print(d_3)
+
+# Calculate median and mean for each group of 'class'
+medians_time_convenience <- aggregate(Departure.Arrival.time.convenient ~ Class, data = data_clean, median)
+medians_time_convenience 
+
+means_time_convenience <- aggregate(Departure.Arrival.time.convenient ~ Class, data = data_clean, mean)
+means_time_convenience 
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Departure.Arrival.time.convenient)) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of time convenience  by class") +
+  xlab("Class") +
+  ylab("Time convenience rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Departure.Arrival.time.convenient ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Departure.Arrival.time.convenient, data_clean$Class, p.adjust.method = "bonferroni")
+```
+Boxplots and Significance Test for Ease of Online booking for each class
+```{r}
+
+# T Test metric
+results_t_4 <- t.test(Ease.of.Online.booking ~ Class , data = data_clean)
+print(results_t_4)
+
+# Calculate Effect size 
+d_4 <- cohen.d(data_clean$Ease.of.Online.booking ~ data_clean$Class, pooled = TRUE)
+print(d_4)
+
+# Calculate median and mean for each group of 'class'
+medians_online_booking <- aggregate(Ease.of.Online.booking ~ Class, data = data_clean, median)
+medians_online_booking 
+
+means_online_booking <- aggregate(Ease.of.Online.booking  ~ Class, data = data_clean, mean)
+means_online_booking
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Ease.of.Online.booking )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of ease of online booking  by class") +
+  xlab("Class") +
+  ylab("ease of online booking rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Ease.of.Online.booking ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Ease.of.Online.booking, data_clean$Class, p.adjust.method = "bonferroni")
+```
+Boxplots and Significance Test for Gate location for each class
+```{r}
+# T Test metric
+results_t_5 <- t.test(Gate.location ~ Class , data = data_clean)
+print(results_t_5)
+
+# Calculate Effect size 
+d_5 <- cohen.d(data_clean$Gate.location~ data_clean$Class, pooled = TRUE)
+print(d_5)
+
+# Calculate median and mean for each group of 'class'
+medians_gate_location <- aggregate(Gate.location ~ Class, data = data_clean, median)
+medians_gate_location  
+
+means_gate_location  <- aggregate(Gate.location  ~ Class, data = data_clean, mean)
+means_gate_location 
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Gate.location )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of gate location  by class") +
+  xlab("Class") +
+  ylab("gate location rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Gate.location ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Gate.location, data_clean$Class, p.adjust.method = "bonferroni")
+```
+Boxplots and Significance Test for Food and drinks for each class
+```{r}
+# T Test metric
+results_t_6 <- t.test(Food.and.drink ~ Class , data = data_clean)
+print(results_t_6)
+
+# Calculate Effect size 
+d_6 <- cohen.d(data_clean$Food.and.drink~ data_clean$Class, pooled = TRUE)
+print(d_6)
+
+# Calculate median and mean for each group of 'class'
+medians_food_drink <- aggregate(Food.and.drink ~ Class, data = data_clean, median)
+medians_food_drink  
+
+means_food_drink  <- aggregate(Food.and.drink  ~ Class, data = data_clean, mean)
+means_food_drink
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Food.and.drink )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of food and drink rating  by class") +
+  xlab("Class") +
+  ylab("food and drink rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Food.and.drink ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Food.and.drink, data_clean$Class, p.adjust.method = "bonferroni")
+```
+Boxplots and Significance Test for Online boarding for each class
+```{r}
+# T Test metric
+results_t_7 <- t.test(Online.boarding ~ Class , data = data_clean)
+print(results_t_7)
+
+# Calculate Effect size 
+d_7 <- cohen.d(data_clean$Online.boarding~ data_clean$Class, pooled = TRUE)
+print(d_7)
+
+# Calculate median and mean for each group of 'class'
+medians_online_boarding <- aggregate(Online.boarding ~ Class, data = data_clean, median)
+medians_online_boarding
+
+means_online_boarding  <- aggregate(Online.boarding   ~ Class, data = data_clean, mean)
+means_online_boarding
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Online.boarding  )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of online boarding rating  by class") +
+  xlab("Class") +
+  ylab("online boarding rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Online.boarding ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Online.boarding, data_clean$Class, p.adjust.method = "bonferroni")
+```
+
+Boxplots and Significance Test for inflight entertainment for each class
+```{r}
+# T Test metric
+results_t_8 <- t.test(Inflight.entertainment ~ Class , data = data_clean)
+print(results_t_8)
+
+# Calculate Effect size 
+d_8 <- cohen.d(data_clean$Inflight.entertainment~ data_clean$Class, pooled = TRUE)
+print(d_8)
+
+# Calculate median and mean for each group of 'class'
+medians_entertainment <- aggregate(Inflight.entertainment ~ Class, data = data_clean, median)
+medians_entertainment 
+
+means_entertainment <- aggregate(Inflight.entertainment ~ Class, data = data_clean, mean)
+means_entertainment 
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Inflight.entertainment)) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of entertainment by class") +
+  xlab("Class") +
+  ylab("entertainment rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Inflight.entertainment ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Inflight.entertainment, data_clean$Class, p.adjust.method = "bonferroni")
+```
+
+Boxplots and Significance Test for on board service for each class
+```{r}
+# T Test metric
+results_t_9 <- t.test(On.board.service ~ Class , data = data_clean)
+print(results_t_9)
+
+# Calculate Effect size 
+d_9 <- cohen.d(data_clean$On.board.service~ data_clean$Class, pooled = TRUE)
+print(d_9)
+
+# Calculate median and mean for each group of 'class'
+medians_board_service <- aggregate(On.board.service ~ Class, data = data_clean, median)
+medians_board_service
+
+means_board_service<- aggregate(On.board.service  ~ Class, data = data_clean, mean)
+means_board_service
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = On.board.service )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of board service by class") +
+  xlab("Class") +
+  ylab("board service rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(On.board.service ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$On.board.service, data_clean$Class, p.adjust.method = "bonferroni")
+```
+
+Boxplots and Significance Test for legroom service for each class
+```{r}
+# T Test metric
+results_t_10 <- t.test(Leg.room.service  ~ Class , data = data_clean)
+print(results_t_10)
+
+# Calculate Effect size 
+d_10 <- cohen.d(data_clean$Leg.room.service ~ data_clean$Class, pooled = TRUE)
+print(d_10)
+
+# Calculate median and mean for each group of 'class'
+medians_legroom <- aggregate(Leg.room.service ~ Class, data = data_clean, median)
+medians_legroom
+
+means_legroom<- aggregate(Leg.room.service ~ Class, data = data_clean, mean)
+means_legroom
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Leg.room.service )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of leg room by class") +
+  xlab("Class") +
+  ylab("leg room rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Leg.room.service ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Leg.room.service, data_clean$Class, p.adjust.method = "bonferroni")
+```
+
+Boxplots and Significance Test for baggage handling for each class
+```{r}
+# T Test metric
+results_t_11 <- t.test(Baggage.handling  ~ Class , data = data_clean)
+print(results_t_11)
+
+# Calculate Effect size 
+d_11 <- cohen.d(data_clean$Baggage.handling ~ data_clean$Class, pooled = TRUE)
+print(d_11)
+
+# Calculate median and mean for each group of 'class'
+medians_baggage <- aggregate(Baggage.handling ~ Class, data = data_clean, median)
+medians_baggage
+
+means_baggage <- aggregate(Baggage.handling ~ Class, data = data_clean, mean)
+means_baggage
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Baggage.handling )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of baggage handling by class") +
+  xlab("Class") +
+  ylab("baggage handling rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Baggage.handling ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Baggage.handling, data_clean$Class, p.adjust.method = "bonferroni")
+```
+
+Boxplots and Significance Test for check in service for each class
+```{r}
+# T Test metric
+results_t_12 <- t.test(Checkin.service  ~ Class , data = data_clean)
+print(results_t_12)
+
+# Calculate Effect size 
+d_12 <- cohen.d(data_clean$Checkin.service ~ data_clean$Class, pooled = TRUE)
+print(d_12)
+
+# Calculate median and mean for each group of 'class'
+medians_checkin <- aggregate(Checkin.service ~ Class, data = data_clean, median)
+medians_checkin
+
+means_checkin <- aggregate(Checkin.service ~ Class, data = data_clean, mean)
+means_checkin
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Checkin.service )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of check-in service by class") +
+  xlab("Class") +
+  ylab("check-in service rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Checkin.service ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Checkin.service, data_clean$Class, p.adjust.method = "bonferroni")
+```
+
+Boxplots and Significance Test for inflight service for each class
+```{r}
+# T Test metric
+results_t_13 <- t.test(Inflight.service ~ Class , data = data_clean)
+print(results_t_13)
+
+# Calculate Effect size 
+d_13 <- cohen.d(data_clean$Inflight.service ~ data_clean$Class, pooled = TRUE)
+print(d_13)
+
+# Calculate median and mean for each group of 'class'
+medians_inflight_service <- aggregate(Inflight.service ~ Class, data = data_clean, median)
+medians_inflight_service
+
+means_inflight_service <- aggregate(Inflight.service ~ Class, data = data_clean, mean)
+means_inflight_service
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Inflight.service )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of inflight service by class") +
+  xlab("Class") +
+  ylab("inflight service rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Inflight.service ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Inflight.service, data_clean$Class, p.adjust.method = "bonferroni")
+```
+
+Boxplots and Significance Test for cleanliness for each class
+```{r}
+# T Test metric
+results_t_14 <- t.test(Cleanliness ~ Class , data = data_clean)
+print(results_t_14)
+
+# Calculate Effect size 
+d_14 <- cohen.d(data_clean$Cleanliness~ data_clean$Class, pooled = TRUE)
+print(d_14)
+
+# Calculate median and mean for each group of 'class'
+medians_cleanliness <- aggregate(Cleanliness ~ Class, data = data_clean, median)
+medians_cleanliness 
+
+means_cleanliness <- aggregate(Cleanliness ~ Class, data = data_clean, mean)
+means_cleanliness 
+
+# Boxplot 
+ggplot(data_clean, aes(x = Class, y = Inflight.service )) + 
+  geom_boxplot(fill = "gray", color = "black") +
+  scale_y_continuous(limits = c(1, 5)) + 
+  ggtitle("Box plot of cleanliness by class") +
+  xlab("Class") +
+  ylab("cleanliness rating") +
+  scale_x_discrete(labels = class_levels)
+
+
+# Ordinal: perform Mann-Whitney-U-Test
+res <- wilcox.test(Cleanliness ~ Class, data = data_clean, exact = FALSE, correct = FALSE, conf.int = TRUE)
+res
+
+## Post-hoc tests using pairwise Wilcoxon rank-sum tests
+wil <- pairwise.wilcox.test(data_clean$Cleanliness, data_clean$Class, p.adjust.method = "bonferroni")
+```
+
+Visualisation - Ideas
+
+Satisfaction Ratings for seat comfort
+```{r}
+library(tidyverse)
+library(ggplot2)
+
+# Convert satisfaction_ratings_for_comfort to a factor variable with ordered levels
+data_clean$Seat.comfort <- factor(data_clean$Seat.comfort, levels = 1:5, ordered = TRUE)
+
+# Group data by Class and satisfaction_ratings_for_comfort, and calculate proportions
+data_grouped <- data_clean %>%
+  group_by(Class, Seat.comfort) %>%
+  summarize(Count = n()) %>%
+  mutate(Proportion = Count / sum(Count))
+
+# Create stacked bar chart with ggplot2
+ggplot(data_grouped, aes(x = Class, y = Proportion, fill = Seat.comfort, desc_stat = 'median')) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Class", y = "Proportion", fill = "Satisfaction Ratings for seat comfort")
+ 
+```
+
+Satisfaction Ratings for online boarding
+```{r}
+# Convert satisfaction_ratings_for_comfort to a factor variable with ordered levels
+data_clean$Online.boarding <- factor(data_clean$Online.boarding, levels = 1:5, ordered = TRUE)
+
+# Group data by Class and satisfaction_ratings_for_comfort, and calculate proportions
+data_grouped <- data_clean %>%
+  group_by(Class, Online.boarding) %>%
+  summarize(Count = n()) %>%
+  mutate(Proportion = Count / sum(Count))
+
+# Create stacked bar chart with ggplot2
+ggplot(data_grouped, aes(x = Class, y = Proportion, fill = Online.boarding, desc_stat = 'median')) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Class", y = "Proportion", fill = "Satisfaction Ratings for online boarding")
+```
+
+Satisfaction Ratings for on board service
+```{r}
+# Convert satisfaction_ratings_for_comfort to a factor variable with ordered levels
+data_clean$On.board.service <- factor(data_clean$On.board.service, levels = 1:5, ordered = TRUE)
+
+# Group data by Class and satisfaction_ratings_for_comfort, and calculate proportions
+data_grouped <- data_clean %>%
+  group_by(Class, On.board.service) %>%
+  summarize(Count = n()) %>%
+  mutate(Proportion = Count / sum(Count))
+
+# Create stacked bar chart with ggplot2
+ggplot(data_grouped, aes(x = Class, y = Proportion, fill = On.board.service, desc_stat = 'median')) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Class", y = "Proportion", fill = "Satisfaction Ratings for on board service")
+```
+
+Satisfaction Ratings for baggage handling
+```{r}
+# Convert satisfaction_ratings_for_comfort to a factor variable with ordered levels
+data_clean$Baggage.handling <- factor(data_clean$Baggage.handling, levels = 1:5, ordered = TRUE)
+
+# Group data by Class and satisfaction_ratings_for_comfort, and calculate proportions
+data_grouped <- data_clean %>%
+  group_by(Class, Baggage.handling) %>%
+  summarize(Count = n()) %>%
+  mutate(Proportion = Count / sum(Count))
+
+# Create stacked bar chart with ggplot2
+ggplot(data_grouped, aes(x = Class, y = Proportion, fill = Baggage.handling, desc_stat = 'median')) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Class", y = "Proportion", fill = "Satisfaction Ratings for baggage handling")
+```
+
+Satisfaction Ratings for checkin service
+```{r}
+# Convert satisfaction_ratings_for_comfort to a factor variable with ordered levels
+data_clean$Checkin.service <- factor(data_clean$Checkin.service, levels = 1:5, ordered = TRUE)
+
+# Group data by Class and satisfaction_ratings_for_comfort, and calculate proportions
+data_grouped <- data_clean %>%
+  group_by(Class, Checkin.service) %>%
+  summarize(Count = n()) %>%
+  mutate(Proportion = Count / sum(Count))
+
+# Create stacked bar chart with ggplot2
+ggplot(data_grouped, aes(x = Class, y = Proportion, fill = Checkin.service, desc_stat = 'median')) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Class", y = "Proportion", fill = "Satisfaction Ratings for checkin service")
+```
+
+Satisfaction Ratings for inflight service
+```{r}
+# Convert satisfaction_ratings_for_comfort to a factor variable with ordered levels
+data_clean$Inflight.service <- factor(data_clean$Inflight.service, levels = 1:5, ordered = TRUE)
+
+# Group data by Class and satisfaction_ratings_for_comfort, and calculate proportions
+data_grouped <- data_clean %>%
+  group_by(Class, Inflight.service) %>%
+  summarize(Count = n()) %>%
+  mutate(Proportion = Count / sum(Count))
+
+# Create stacked bar chart with ggplot2
+ggplot(data_grouped, aes(x = Class, y = Proportion, fill = Inflight.service, desc_stat = 'median')) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Class", y = "Proportion", fill = "Satisfaction Ratings for inflight service")
+```
+
