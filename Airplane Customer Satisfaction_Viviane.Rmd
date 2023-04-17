@@ -1,0 +1,190 @@
+---
+title: "Airplane Customer Satisfaction"
+output: html_document
+authors: Cosima, Nina and Viviane 
+date: '2023-04-07'
+---
+Our Research Question: 
+
+What aspects should the airline market to convince business travelers to upgrade from economy to business class? (Marketing-focused)
+
+Rational:  
+
+Increase profit for the airline. Business class was built to satisfy the need of business travelers. Business travelers make up to 75% of the annual airline profit because they are flying business or first class. On average the price of a business class ticket is four times the price of an economy ticket.  
+
+Applied methods to answer our RQ: 
+
+Which satisfaction variables do business class passengers rate significantly higher than economy class passengers? Select those with at least medium effect sizes. These are the aspects that should be marketed.
+
+
+Load all necessary packages
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(effsize)
+library(dplyr)
+```
+
+
+Read in the data 
+```{r}
+data <- read.csv("satisfaction_2015.csv", header = TRUE)
+summary(data)
+```
+
+
+Clean the data: Remove all unnecessary columns and select only passengers that travel for business reasons. Remove class 'Eco Plus' so that we only have Eco and Business Class left. 
+```{r}
+data_clean <- data %>%  
+  select(-c (id,Customer.Type,satisfaction_v2,Departure.Delay.in.Minutes,Arrival.Delay.in.Minutes))  
+  
+data_clean <- data_clean %>%  
+  filter(Type.of.Travel == 'Business travel' & Class != 'Eco Plus')
+
+data_clean[data_clean == 0] <- NA
+view(data_clean)
+
+#Class as factor + levels 
+data_clean$Class <- factor(data_clean$Class)
+
+class_levels <- levels(data_clean$Class)
+```
+
+VISUALIZATION 1 
+```{r}
+# Create mean differences  as columns for each variable 
+  data_clean$Class <- factor(data_clean$Class)
+data_clean <- as_tibble(data_clean)
+
+
+data_clean <- data_clean %>%
+  mutate_at(vars(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness), as.numeric)
+
+
+data_clean <- data_clean %>% 
+  filter(!is.na(Seat.comfort)) %>% 
+  filter(!is.na(Online.boarding))  %>% 
+  filter(!is.na(On.board.service)) %>% 
+  filter(!is.na(Baggage.handling))  %>% 
+  filter(!is.na(Checkin.service)) %>% 
+  filter(!is.na(Inflight.service))  %>% 
+  filter(!is.na(Inflight.wifi.service)) %>% 
+  filter(!is.na(Departure.Arrival.time.convenient))  %>% 
+  filter(!is.na(Ease.of.Online.booking))  %>% 
+  filter(!is.na(Gate.location)) %>% 
+  filter(!is.na(Food.and.drink))  %>% 
+  filter(!is.na(Inflight.entertainment)) %>% 
+  filter(!is.na(Cleanliness))  %>% 
+  filter(!is.na(Leg.room.service)) 
+  
+
+data_clean <- data_clean %>% 
+   mutate(delta_seatc = mean(Seat.comfort[Class == "Business"]) - mean(Seat.comfort[Class == "Eco"]),
+         delta_onlboard = mean(Online.boarding[Class == "Business"]) - mean(Online.boarding[Class == "Eco"]),
+         delta_onbser = mean(On.board.service[Class == "Business"]) - mean(On.board.service[Class == "Eco"]),
+         delta_baggage = mean(Baggage.handling[Class == "Business"]) - mean(Baggage.handling[Class == "Eco"]),
+         delta_checkin = mean(Checkin.service[Class == "Business"]) - mean(Checkin.service[Class == "Eco"]),
+         delta_infser = mean(Inflight.service[Class == "Business"]) - mean(Inflight.service[Class == "Eco"]),
+         delta_wifi = mean(Inflight.wifi.service[Class == "Business"]) - mean(Inflight.wifi.service[Class == "Eco"]),
+         delta_timeconv = mean(Departure.Arrival.time.convenient[Class == "Business"]) - mean(Departure.Arrival.time.convenient[Class == "Eco"]),
+          delta_onbooking = mean(Ease.of.Online.booking[Class == "Business"]) - mean(Ease.of.Online.booking[Class == "Eco"]),
+         delta_gate = mean(Gate.location[Class == "Business"])- mean(Gate.location [Class == "Eco"]),
+         delta_fooddrink = mean(Food.and.drink[Class == "Business"]) - mean(Food.and.drink[Class == "Eco"]),
+         delta_entertainment = mean(Inflight.entertainment[Class == "Business"]) - mean(Inflight.entertainment[Class == "Eco"]),
+         delta_leg = mean(Leg.room.service[Class == "Business"]) - mean(Leg.room.service[Class == "Eco"]),
+         delta_cleanliness = mean(Cleanliness[Class == "Business"]) - mean(Cleanliness[Class == "Eco"]))
+
+# Create Visualization 
+
+
+library(ggplot2)
+
+# Select the columns that you want to use in the plot
+df_plot <- data_clean %>%
+  select(starts_with("delta_")) 
+
+# Reshape the data into long format
+df_plot_long <- tidyr::gather(df_plot, key = "variable", value = "delta")
+
+# Create the plot
+ggplot(df_plot_long, aes(x = variable, y = delta))  +
+  geom_point(size = 3) +
+  geom_line(group = 1) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "blue") +
+  labs(title = "Difference between Economy and Business Class Satisfaction Ratings",x = "Satisfaction Variables", y = "Delta") +
+  coord_cartesian(ylim = c(-0.5, 1)) +
+   theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) 
+ 
+
+
+
+```
+
+VISUALIZATION 2 --> bit confusing haha  
+```{r}
+data_clean <- data_clean %>% 
+  mutate(proportion_seatcomfort_business = sum(Seat.comfort > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_seatcomfort_economy = sum(Seat.comfort > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_onlineboarding_business = sum(Online.boarding > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_onlineboarding_economy = sum(Online.boarding > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_onboardserv_business = sum(On.board.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_onboardserv_economy = sum(On.board.service> 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_baggage_business = sum(Baggage.handling > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_baggage_economy = sum(Baggage.handling > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_checkin_business = sum(Checkin.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_checkin_economy = sum(Checkin.service > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_inflightserv_business = sum(Inflight.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_inflightserv_economy = sum(Inflight.service > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_wifi_business = sum(Inflight.wifi.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_wifi_economy = sum(Inflight.wifi.service > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_timeconvenient_business = sum(Departure.Arrival.time.convenient > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_timeconvenient_economy = sum(Departure.Arrival.time.convenient > 3 & Class == "Eco") / sum(Class == "Eco"),
+        proportion_onlinebooking_business = sum(Ease.of.Online.booking > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_onlinebooking_economy = sum(Ease.of.Online.booking > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_gate_business = sum(Gate.location > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_gate_economy = sum(Gate.location > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_fooddrink_business = sum(Food.and.drink> 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_fooddrink_economy = sum(Food.and.drink > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_entertainment_business = sum(Inflight.entertainment > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_entertainment_economy = sum(Inflight.entertainment > 3 & Class == "Eco") / sum(Class == "Eco"),
+        proportion_cleanliness_business = sum(Cleanliness > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_cleanliness_economy = sum(Cleanliness > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_legroom_business = sum(Leg.room.service> 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_legroom_economy = sum(Leg.room.service > 3 & Class == "Eco") / sum(Class == "Eco"),
+          deltaprop_seatcomfort = proportion_seatcomfort_business - proportion_seatcomfort_economy,
+          deltaprop_onlineboarding = proportion_onlineboarding_business - proportion_onlineboarding_economy,
+          deltaprop_seatcomfort = proportion_baggage_business - proportion_baggage_economy,
+          deltaprop_baggage = proportion_baggage_business - proportion_baggage_economy,
+          deltaprop_checkin = proportion_checkin_business - proportion_checkin_economy,
+          deltaprop_inflightserv = proportion_inflightserv_business - proportion_inflightserv_economy,
+          deltaprop_wifi = proportion_wifi_business - proportion_wifi_economy,
+          deltaprop_timeconvenient = proportion_timeconvenient_business - proportion_timeconvenient_economy,
+          deltaprop_onlinebooking = proportion_onlinebooking_business - proportion_onlinebooking_economy,
+          deltaprop_gate = proportion_gate_business - proportion_gate_economy,
+          deltaprop_fooddrink = proportion_fooddrink_business - proportion_fooddrink_economy,
+          deltaprop_entertainment = proportion_entertainment_business - proportion_entertainment_economy,
+          deltaprop_cleanliness = proportion_cleanliness_business - proportion_cleanliness_economy,
+          deltaprop_legroom = proportion_legroom_business - proportion_legroom_economy)
+
+
+df_plot_prop <- data_clean %>%
+  select(starts_with("deltaprop_")) 
+
+# Reshape the data into long format
+df_plot_prop_long <- tidyr::gather(df_plot_prop, key = "variable", value = "proportion")
+
+# Create the plot
+ggplot(df_plot_prop_long, aes(x = variable, y = proportion))  +
+  geom_point(size = 3) +
+  geom_line(group = 1) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  geom_hline(yintercept = 0.25, linetype = "dashed", color = "blue") +
+  labs(title = "Proportion of good ratings between Economy and Business Class ",x = "Satisfaction Variables", y = "Delta") +
+  coord_cartesian(ylim = c(0, 0.5)) +
+   theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) 
+
+```
+
