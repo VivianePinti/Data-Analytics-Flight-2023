@@ -1,0 +1,99 @@
+---
+title: "MeanDifferences"
+output: html_document
+date: '2023-04-18'
+---
+
+Read in the data
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(effsize)
+library(dplyr)
+
+data <- read.csv("satisfaction_2015.csv", header = TRUE)
+summary(data)
+```
+
+Business travelers means by classes
+```{r}
+dataBT <- data %>%  
+  filter(Type.of.Travel == 'Business travel' & Class != 'Eco Plus')
+
+dataBT[dataBT == 0] <- NA
+view(dataBT)
+
+#Class as factor + levels 
+dataBT$Class <- factor(dataBT$Class)
+
+library(dplyr)
+
+dataBT %>%
+  group_by(Class) %>% 
+  summarise(across(c("Inflight.wifi.service", "Departure.Arrival.time.convenient", "Ease.of.Online.booking", "Gate.location", "Food.and.drink", "Online.boarding", "Seat.comfort", "Inflight.entertainment", "On.board.service", "Leg.room.service", "Baggage.handling", "Checkin.service", "Inflight.service", "Cleanliness"), ~mean(., na.rm = TRUE)))
+```
+
+Personal travelers means by classes
+```{r}
+dataPT <- data %>%  
+  filter(Type.of.Travel == 'Personal Travel' & Class != 'Eco Plus')
+
+dataPT[dataPT == 0] <- NA
+view(dataPT)
+
+#Class as factor + levels 
+dataPT$Class <- factor(dataPT$Class)
+
+dataPT %>%
+  group_by(Class) %>% 
+  summarise(across(c("Inflight.wifi.service", "Departure.Arrival.time.convenient", "Ease.of.Online.booking", "Gate.location", "Food.and.drink", "Online.boarding", "Seat.comfort", "Inflight.entertainment", "On.board.service", "Leg.room.service", "Baggage.handling", "Checkin.service", "Inflight.service", "Cleanliness"), ~mean(., na.rm = TRUE)))
+```
+
+Business class travelers means by type of travel
+```{r}
+dataBC <- data %>%  
+  filter(Class == 'Business')
+
+dataBC[dataBC == 0] <- NA
+view(dataBC)
+
+#Class as factor + levels 
+dataBC$Class <- factor(dataBC$Class)
+
+dataBC %>%
+  group_by(Type.of.Travel) %>% 
+  summarise(across(c("Inflight.wifi.service", "Departure.Arrival.time.convenient", "Ease.of.Online.booking", "Gate.location", "Food.and.drink", "Online.boarding", "Seat.comfort", "Inflight.entertainment", "On.board.service", "Leg.room.service", "Baggage.handling", "Checkin.service", "Inflight.service", "Cleanliness"), ~mean(., na.rm = TRUE)))
+
+dataBC %>%
+  pivot_longer(cols = c("Inflight.wifi.service", "Departure.Arrival.time.convenient", "Ease.of.Online.booking", "Gate.location", "Food.and.drink", "Online.boarding", "Seat.comfort", "Inflight.entertainment", "On.board.service", "Leg.room.service", "Baggage.handling", "Checkin.service", "Inflight.service", "Cleanliness")) %>%
+  group_by(Type.of.Travel, name) %>%
+  summarise(mean_score = mean(value, na.rm = TRUE)) %>%
+  ggplot(aes(x = Type.of.Travel, y = mean_score, fill = name)) +
+  geom_col(position = "dodge") +
+  labs(x = "Type of Travel", y = "Mean Score", fill = "Variable")
+```
+
+Economy class travelers means by type of travel
+```{r}
+dataEC <- data %>%  
+  filter(Class == 'Eco')
+
+dataEC[dataEC == 0] <- NA
+view(dataEC)
+
+#Class as factor + levels 
+dataEC$Class <- factor(dataEC$Class)
+
+dataEC %>%
+  group_by(Type.of.Travel) %>% 
+  summarise(across(c("Inflight.wifi.service", "Departure.Arrival.time.convenient", "Ease.of.Online.booking", "Gate.location", "Food.and.drink", "Online.boarding", "Seat.comfort", "Inflight.entertainment", "On.board.service", "Leg.room.service", "Baggage.handling", "Checkin.service", "Inflight.service", "Cleanliness"), ~mean(., na.rm = TRUE)))
+
+dataEC %>%
+  pivot_longer(cols = c("Inflight.wifi.service", "Departure.Arrival.time.convenient", "Ease.of.Online.booking", "Gate.location", "Food.and.drink", "Online.boarding", "Seat.comfort", "Inflight.entertainment", "On.board.service", "Leg.room.service", "Baggage.handling", "Checkin.service", "Inflight.service", "Cleanliness")) %>%
+  group_by(Type.of.Travel, name) %>%
+  summarise(mean_score = mean(value, na.rm = TRUE)) %>%
+  ggplot(aes(x = Type.of.Travel, y = mean_score, fill = name)) +
+  geom_col(position = "dodge") +
+  labs(x = "Type of Travel", y = "Mean Score", fill = "Variable")
+```
+
