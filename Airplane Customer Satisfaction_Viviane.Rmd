@@ -107,7 +107,9 @@ df_plot <- data_clean %>%
 df_plot_long <- tidyr::gather(df_plot, key = "variable", value = "delta")
 
 # Create the plot
-ggplot(df_plot_long, aes(x = variable, y = delta))  +
+df_plot_long %>%
+  mutate(variable = fct_reorder(variable, desc(delta))) %>%
+  ggplot(aes(x = variable, y = delta)) + 
   geom_point(size = 3) +
   geom_line(group = 1) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
@@ -176,7 +178,9 @@ df_plot_prop <- data_clean %>%
 df_plot_prop_long <- tidyr::gather(df_plot_prop, key = "variable", value = "proportion")
 
 # Create the plot
-ggplot(df_plot_prop_long, aes(x = variable, y = proportion))  +
+df_plot_prop_long %>%
+  mutate(variable = fct_reorder(variable, desc(proportion))) %>%
+  ggplot(aes(x = variable, y = proportion))  +
   geom_point(size = 3) +
   geom_line(group = 1) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
