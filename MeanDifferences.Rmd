@@ -23,6 +23,7 @@ dataBT <- data %>%
 dataBT[dataBT == 0] <- NA
 view(dataBT)
 
+
 #Class as factor + levels 
 dataBT$Class <- factor(dataBT$Class)
 
@@ -97,3 +98,71 @@ dataEC %>%
   labs(x = "Type of Travel", y = "Mean Score", fill = "Variable")
 ```
 
+```{r}
+data_clean <- data %>%  
+  select(-c (id,Customer.Type,satisfaction_v2,Departure.Delay.in.Minutes,Arrival.Delay.in.Minutes))  
+  
+#Class as factor + levels 
+data_clean$Class <- factor(data_clean$Class)
+
+class_levels <- levels(data_clean$Class)
+
+data_clean <- data_clean %>%
+  mutate_at(vars(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness), as.numeric)
+
+data_clean <- data_clean %>% 
+  filter(!is.na(Seat.comfort)) %>% 
+  filter(!is.na(Online.boarding))  %>% 
+  filter(!is.na(On.board.service)) %>% 
+  filter(!is.na(Baggage.handling))  %>% 
+  filter(!is.na(Checkin.service)) %>% 
+  filter(!is.na(Inflight.service))  %>% 
+  filter(!is.na(Inflight.wifi.service)) %>% 
+  filter(!is.na(Departure.Arrival.time.convenient))  %>% 
+  filter(!is.na(Ease.of.Online.booking))  %>% 
+  filter(!is.na(Gate.location)) %>% 
+  filter(!is.na(Food.and.drink))  %>% 
+  filter(!is.na(Inflight.entertainment)) %>% 
+  filter(!is.na(Cleanliness))  %>% 
+  filter(!is.na(Leg.room.service)) 
+
+#Mean business travelers in business class
+meanBBC <- data_clean %>%
+  filter(Type.of.Travel == 'Business travel' & Class == "Business" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+#Mean business travelers in economy class
+meanBEC <- data_clean %>%
+  filter(Type.of.Travel == 'Business travel' & Class == "Eco" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+#Mean personal travelers in business class
+meanPBC <- data_clean %>%
+  filter(Type.of.Travel == 'Personal Travel' & Class == "Business" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+#Mean personal travelers in economy class
+meanPEC <- data_clean %>%
+  filter(Type.of.Travel == 'Personal Travel' & Class == "Eco" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+#Graphic
+means_df <- data.frame(Type.of.Travel = c("Business Travel", "Business Travel", "Personal Travel", "Personal Travel"),
+                        Class = c("Business", "Eco", "Business", "Eco"),
+                        Mean = c(meanBBC, meanBEC, meanPBC, meanPEC))
+
+ggplot(means_df, aes(x = Type.of.Travel, y = Mean, fill = Class)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Type of Travel", y = "Satisfaction Level") +
+  ggtitle("Mean Satisfaction Level by Type of Travel and Class") +
+  scale_fill_manual(values = c("Business" = "blue", "Eco" = "red")) +
+  ylim(0, 5)
+```
