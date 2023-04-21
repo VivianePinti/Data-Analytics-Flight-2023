@@ -1,22 +1,8 @@
 ---
-title: "Airplane Customer Satisfaction"
+title: "Visualisation"
 output: html_document
-authors: Cosima, Nina and Viviane 
-date: '2023-04-07'
+date: '2023-04-21'
 ---
-Our Research Question: 
-
-What aspects should the airline market to convince business travelers to upgrade from economy to business class? (Marketing-focused)
-
-Rational:  
-
-Increase profit for the airline. Business class was built to satisfy the need of business travelers. Business travelers make up to 75% of the annual airline profit because they are flying business or first class. On average the price of a business class ticket is four times the price of an economy ticket.  
-
-Applied methods to answer our RQ: 
-
-Which satisfaction variables do business class passengers rate significantly higher than economy class passengers? Select those with at least medium effect sizes. These are the aspects that should be marketed.
-
-
 Load all necessary packages
 ```{r echo = FALSE, message = FALSE}
 library(tidyverse)
@@ -50,7 +36,7 @@ data_clean$Class <- factor(data_clean$Class)
 class_levels <- levels(data_clean$Class)
 ```
 
-VISUALIZATION 1 
+
 ```{r } 
 # Create mean differences  as columns for each variable 
   data_clean$Class <- factor(data_clean$Class)
@@ -76,56 +62,8 @@ data_clean <- data_clean %>%
   filter(!is.na(Inflight.entertainment)) %>% 
   filter(!is.na(Cleanliness))  %>% 
   filter(!is.na(Leg.room.service)) 
-  
 
-data_clean <- data_clean %>% 
-   mutate(delta_seatc = mean(Seat.comfort[Class == "Business"]) - mean(Seat.comfort[Class == "Eco"]),
-         delta_onlboard = mean(Online.boarding[Class == "Business"]) - mean(Online.boarding[Class == "Eco"]),
-         delta_onbser = mean(On.board.service[Class == "Business"]) - mean(On.board.service[Class == "Eco"]),
-         delta_baggage = mean(Baggage.handling[Class == "Business"]) - mean(Baggage.handling[Class == "Eco"]),
-         delta_checkin = mean(Checkin.service[Class == "Business"]) - mean(Checkin.service[Class == "Eco"]),
-         delta_infser = mean(Inflight.service[Class == "Business"]) - mean(Inflight.service[Class == "Eco"]),
-         delta_wifi = mean(Inflight.wifi.service[Class == "Business"]) - mean(Inflight.wifi.service[Class == "Eco"]),
-         delta_timeconv = mean(Departure.Arrival.time.convenient[Class == "Business"]) - mean(Departure.Arrival.time.convenient[Class == "Eco"]),
-          delta_onbooking = mean(Ease.of.Online.booking[Class == "Business"]) - mean(Ease.of.Online.booking[Class == "Eco"]),
-         delta_gate = mean(Gate.location[Class == "Business"])- mean(Gate.location [Class == "Eco"]),
-         delta_fooddrink = mean(Food.and.drink[Class == "Business"]) - mean(Food.and.drink[Class == "Eco"]),
-         delta_entertainment = mean(Inflight.entertainment[Class == "Business"]) - mean(Inflight.entertainment[Class == "Eco"]),
-         delta_leg = mean(Leg.room.service[Class == "Business"]) - mean(Leg.room.service[Class == "Eco"]),
-         delta_cleanliness = mean(Cleanliness[Class == "Business"]) - mean(Cleanliness[Class == "Eco"]))
-
-# Create Visualization 
-
-
-library(ggplot2)
-
-# Select the columns that you want to use in the plot
-df_plot <- data_clean %>%
-  select(starts_with("delta_")) 
-
-# Reshape the data into long format
-df_plot_long <- tidyr::gather(df_plot, key = "variable", value = "delta")
-
-# Create the plot
-df_plot_long %>%
-  mutate(variable = fct_reorder(variable, desc(delta))) %>%
-  ggplot(aes(x = variable, y = delta)) + 
-  geom_point(size = 3) +
-  geom_line(group = 1) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "blue") +
-  labs(title = "Difference between Economy and Business Class Satisfaction Ratings",x = "Satisfaction Variables", y = "Delta") +
-  coord_cartesian(ylim = c(-0.5, 1)) +
-   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) 
- 
-
-
-
-```
-
-VISUALIZATION 2 --> bit confusing haha  
-```{r}
+### New code 
 data_clean <- data_clean %>% 
   mutate(proportion_seatcomfort_business = sum(Seat.comfort > 3 & Class == "Business") / sum(Class == "Business"),
          proportion_seatcomfort_economy = sum(Seat.comfort > 3 & Class == "Eco") / sum(Class == "Eco"),
@@ -171,15 +109,53 @@ data_clean <- data_clean %>%
           deltaprop_legroom = proportion_legroom_business - proportion_legroom_economy)
 
 
-df_plot_prop <- data_clean %>%
+df_1 <- data_clean %>%
+  select(proportion_seatcomfort_business, proportion_seatcomfort_economy, proportion_onlineboarding_business,
+         proportion_onlineboarding_economy, proportion_onboardserv_business, proportion_onboardserv_economy,
+         proportion_baggage_business, proportion_baggage_economy, proportion_checkin_business, proportion_checkin_economy,
+         proportion_inflightserv_business, proportion_inflightserv_economy, proportion_wifi_business, proportion_wifi_economy,
+         proportion_timeconvenient_business, proportion_timeconvenient_economy, proportion_onlinebooking_business, 
+         proportion_onlinebooking_economy, proportion_gate_business, proportion_gate_economy, proportion_fooddrink_business,
+         proportion_fooddrink_economy, proportion_entertainment_business, proportion_entertainment_economy, proportion_cleanliness_business, proportion_cleanliness_economy, proportion_legroom_business,
+proportion_legroom_economy)
+
+df_2 <- data_clean %>%
+select (deltaprop_seatcomfort, deltaprop_onlineboarding,deltaprop_seatcomfort, deltaprop_baggage, deltaprop_checkin,deltaprop_inflightserv,deltaprop_wifi, deltaprop_timeconvenient,deltaprop_onlinebooking,deltaprop_gate, deltaprop_fooddrink,deltaprop_entertainment,deltaprop_cleanliness, deltaprop_legroom) 
+
+
+# convert data frame to tidy format
+df_prop <- df_1%>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "proportion")
+
+
+df_prop<- separate(df_prop, variable, c("name","aspect","class"), sep = "_")
+
+# delta df 
+
+df_delta<- df_2%>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "delta")
+
+
+df_delta <- separate(df_delta, variable, c("name","aspect"), sep = "_")
+
+
+#left join
+df_combined <- left_join(df_prop, df_delta, by = "aspect")
+
+
+
+
+
+
+
+
+# delta df plot 
+df_delta<- data_clean %>%
   select(starts_with("deltaprop_")) 
 
-# Reshape the data into long format
-df_plot_prop_long <- tidyr::gather(df_plot_prop, key = "variable", value = "proportion")
+df_delta_long <- tidyr::gather(df_delta, key = "variable", value = "proportion")
 
-# Create the plot
-df_plot_prop_long %>%
-  mutate(variable = fct_reorder(variable, desc(proportion))) %>%
+plot1 <- df_delta_long %>%
   ggplot(aes(x = variable, y = proportion))  +
   geom_point(size = 3) +
   geom_line(group = 1) +
@@ -190,5 +166,19 @@ df_plot_prop_long %>%
    theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) 
 
-```
+# plot the data
 
+plot2 <- df_plot_new_tidy %>%
+  ggplot(aes(x = aspect, y = proportion, color = class)) +
+  geom_point(position = position_dodge(width = 0.5), size = 3) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(x = "Aspect", y = "Proportion", color = "Class")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) 
+
+install.packages("cowplot")
+library(cowplot)
+
+plot_grid(plot1, plot2, align = "h", ncol = 2)
+
+
+``` 
