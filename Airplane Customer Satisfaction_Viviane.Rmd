@@ -18,7 +18,7 @@ Which satisfaction variables do business class passengers rate significantly hig
 
 
 Load all necessary packages
-```{r}
+```{r echo = FALSE, message = FALSE}
 library(tidyverse)
 library(ggplot2)
 library(effsize)
@@ -27,7 +27,7 @@ library(dplyr)
 
 
 Read in the data 
-```{r}
+```{r echo = FALSE}
 data <- read.csv("satisfaction_2015.csv", header = TRUE)
 summary(data)
 ```
@@ -51,7 +51,7 @@ class_levels <- levels(data_clean$Class)
 ```
 
 VISUALIZATION 1 
-```{r}
+```{r } 
 # Create mean differences  as columns for each variable 
   data_clean$Class <- factor(data_clean$Class)
 data_clean <- as_tibble(data_clean)
