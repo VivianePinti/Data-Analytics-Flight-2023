@@ -19,6 +19,16 @@ summary(data)
 ```
 
 
+DATA INSPECTION 
+Personal vs. work travelers
+```{r}
+
+```
+
+
+
+
+DATA WRANGLING I 
 Clean the data: Remove all unnecessary columns and select only passengers that travel for business reasons. Remove class 'Eco Plus' so that we only have Eco and Business Class left. 
 ```{r}
 data_clean <- data %>%  
@@ -36,16 +46,22 @@ data_clean$Class <- factor(data_clean$Class)
 class_levels <- levels(data_clean$Class)
 ```
 
-
+DATA WRANGLING II
 ```{r } 
-# Create mean differences  as columns for each variable 
-  data_clean$Class <- factor(data_clean$Class)
+data_clean$Class <- factor(data_clean$Class)
 data_clean <- as_tibble(data_clean)
-
 
 data_clean <- data_clean %>%
   mutate_at(vars(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness), as.numeric)
 
+#Percentage of NA's for each column 
+na_percentages <- colMeans(is.na(data_clean)) * 100
+
+##  Print the results
+cat("Percentage of missing values for each column:\n")
+cat(sprintf("%s: %.2f%%\n", names(na_percentages), na_percentages))
+
+# Reove NA's 
 
 data_clean <- data_clean %>% 
   filter(!is.na(Seat.comfort)) %>% 
@@ -63,7 +79,14 @@ data_clean <- data_clean %>%
   filter(!is.na(Cleanliness))  %>% 
   filter(!is.na(Leg.room.service)) 
 
-### New code 
+
+
+``` 
+
+CALCULATIONS
+Compute proprotions and delta's
+
+```{r}
 data_clean <- data_clean %>% 
   mutate(proportion_seatcomfort_business = sum(Seat.comfort > 3 & Class == "Business") / sum(Class == "Business"),
          proportion_seatcomfort_economy = sum(Seat.comfort > 3 & Class == "Eco") / sum(Class == "Eco"),
@@ -109,6 +132,8 @@ data_clean <- data_clean %>%
           deltaprop_legroom = proportion_legroom_business - proportion_legroom_economy)
 
 
+# Create two separate data frames fro proportions and deltas 
+
 df_1 <- data_clean %>%
   select(proportion_seatcomfort_business, proportion_seatcomfort_economy, proportion_onlineboarding_business,
          proportion_onlineboarding_economy, proportion_onboardserv_business, proportion_onboardserv_economy,
@@ -123,62 +148,73 @@ df_2 <- data_clean %>%
 select (deltaprop_seatcomfort, deltaprop_onlineboarding,deltaprop_seatcomfort, deltaprop_baggage, deltaprop_checkin,deltaprop_inflightserv,deltaprop_wifi, deltaprop_timeconvenient,deltaprop_onlinebooking,deltaprop_gate, deltaprop_fooddrink,deltaprop_entertainment,deltaprop_cleanliness, deltaprop_legroom) 
 
 
-# convert data frame to tidy format
+# convert data frames to tidy format
+
 df_prop <- df_1%>%
   pivot_longer(cols = everything(), names_to = "variable", values_to = "proportion")
 
 
 df_prop<- separate(df_prop, variable, c("name","aspect","class"), sep = "_")
 
-# delta df 
+
 
 df_delta<- df_2%>%
-  pivot_longer(cols = everything(), names_to = "variable", values_to = "delta")
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "proportion")
 
 
 df_delta <- separate(df_delta, variable, c("name","aspect"), sep = "_")
 
+# delta df 
+
+#df_delta<- df_2%>%
+  #pivot_longer(cols = everything(), names_to = "variable", values_to = "delta")
+
+
+#df_delta <- separate(df_delta, variable, c("name","aspect"), sep = "_")
+
 
 #left join
-df_combined <- left_join(df_prop, df_delta, by = "aspect")
-
-
-
-
-
-
-
+#df_combined <- left_join(df_prop, df_delta, by = "aspect")
 
 # delta df plot 
-df_delta<- data_clean %>%
-  select(starts_with("deltaprop_")) 
+#df_delta<- data_clean %>%
+  #select(starts_with("deltaprop_")) 
 
-df_delta_long <- tidyr::gather(df_delta, key = "variable", value = "proportion")
+#df_delta_long <- tidyr::gather(df_delta, key = "variable", value = "proportion")
 
-plot1 <- df_delta_long %>%
-  ggplot(aes(x = variable, y = proportion))  +
-  geom_point(size = 3) +
-  geom_line(group = 1) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
-  geom_hline(yintercept = 0.25, linetype = "dashed", color = "blue") +
-  labs(title = "Proportion of good ratings between Economy and Business Class ",x = "Satisfaction Variables", y = "Delta") +
-  coord_cartesian(ylim = c(0, 0.5)) +
-   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) 
+```
 
-# plot the data
 
-plot2 <- df_plot_new_tidy %>%
+VISUALISATION
+
+```{r}
+# Create plot for data frame 2 (Proportions)
+
+#plot1 <- df_delta%>%
+  #ggplot(aes(x = aspect, y = proportion))  +
+  #geom_point(size = 3) +
+  #geom_line(group = 1) +
+  #scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25), expand = expansion(mult = c(0, 0.1))) +
+  #labs(title = "Proportion of good ratings between Economy and Business Class ",x = "Satisfaction Variables", y = "Delta") +
+  #coord_cartesian(ylim = c(0, 0.5)) +
+  #theme_minimal() +
+  #theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+
+plot2 <- df_prop %>%
   ggplot(aes(x = aspect, y = proportion, color = class)) +
   geom_point(position = position_dodge(width = 0.5), size = 3) +
   scale_y_continuous(limits = c(0, 1)) +
   labs(x = "Aspect", y = "Proportion", color = "Class")+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) 
 
-install.packages("cowplot")
-library(cowplot)
 
-plot_grid(plot1, plot2, align = "h", ncol = 2)
+# Add delta line to plot 2 
 
+combined_plot <- plot2 +
+  geom_line(data = df_delta, aes(x = aspect, y = proportion), group = 1, color = "black", linetype = "dashed") +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25), expand = expansion(mult = c(0, 0.1)))
 
-``` 
+combined_plot
+```
+
