@@ -200,11 +200,21 @@ VISUALISATION
   #theme_minimal() +
   #theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
 
+plot1 <- df_delta %>%
+  mutate(aspect = fct_reorder(aspect, desc(proportion))) %>%
+  ggplot(aes(x = aspect, y = proportion))  +
+    geom_line(group = 1) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+    geom_hline(yintercept = 0.25, linetype = "dashed", color = "blue") +
+    labs(title = "Proportion of good ratings between Economy and Business Class ",x = "Satisfaction Variables", y = "Delta") +
+    coord_cartesian(ylim = c(0, 0.5)) +
+     theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
 
 plot2 <- df_prop %>%
   ggplot(aes(x = aspect, y = proportion, color = class)) +
   geom_point(position = position_dodge(width = 0.5), size = 3) +
-  scale_y_continuous(limits = c(0, 1)) +
+  scale_y_continuous(limits = c(0, 1), sec.axis = sec_axis(~., name = "Proportion")) +
   labs(x = "Aspect", y = "Proportion", color = "Class")+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) 
 
