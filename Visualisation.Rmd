@@ -1,7 +1,8 @@
 ---
 title: "Visualisation"
+authors: Cosmia, Nina and Viviane
 output: html_document
-date: '2023-04-21'
+date: '2023-04-24'
 ---
 Load all necessary packages
 ```{r echo = FALSE, message = FALSE}
@@ -13,56 +14,47 @@ library(dplyr)
 
 
 Read in the data 
-```{r echo = FALSE}
+```{r echo = FALSE, message = FALSE}
 data <- read.csv("satisfaction_2015.csv", header = TRUE)
 summary(data)
 ```
 
-
-DATA INSPECTION 
-Personal vs. work travelers
-```{r}
-
-```
-
-
-
-
-DATA WRANGLING I 
-Clean the data: Remove all unnecessary columns and select only passengers that travel for business reasons. Remove class 'Eco Plus' so that we only have Eco and Business Class left. 
-```{r}
+DATA WRANGLING I
+```{r echo = FALSE, message = FALSE}
 data_clean <- data %>%  
   select(-c (id,Customer.Type,satisfaction_v2,Departure.Delay.in.Minutes,Arrival.Delay.in.Minutes))  
   
-data_clean <- data_clean %>%  
-  filter(Type.of.Travel == 'Business travel' & Class != 'Eco Plus')
-
-data_clean[data_clean == 0] <- NA
-view(data_clean)
-
 #Class as factor + levels 
 data_clean$Class <- factor(data_clean$Class)
 
 class_levels <- levels(data_clean$Class)
-```
-
-DATA WRANGLING II
-```{r } 
-data_clean$Class <- factor(data_clean$Class)
-data_clean <- as_tibble(data_clean)
 
 data_clean <- data_clean %>%
   mutate_at(vars(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness), as.numeric)
 
+data_clean <- as_tibble(data_clean)
+```
+
+NA's ANALYSIS
+```{r echo = FALSE}
 #Percentage of NA's for each column 
+data_clean[data_clean == 0] <- NA
+
 na_percentages <- colMeans(is.na(data_clean)) * 100
+
 
 ##  Print the results
 cat("Percentage of missing values for each column:\n")
 cat(sprintf("%s: %.2f%%\n", names(na_percentages), na_percentages))
 
-# Reove NA's 
+#mean NA
+mean(na_percentages)
 
+```
+
+NA: Remove 
+
+```{r echo = FALSE, message = FALSE}
 data_clean <- data_clean %>% 
   filter(!is.na(Seat.comfort)) %>% 
   filter(!is.na(Online.boarding))  %>% 
@@ -78,15 +70,73 @@ data_clean <- data_clean %>%
   filter(!is.na(Inflight.entertainment)) %>% 
   filter(!is.na(Cleanliness))  %>% 
   filter(!is.na(Leg.room.service)) 
+```
+
+DATA INSPECTION 
+Personal vs. work travelers
+```{r echo = FALSE, message = FALSE}
+#Mean business travelers in business class
+meanBBC <- data_clean %>%
+  filter(Type.of.Travel == 'Business travel' & Class == "Business" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+#Mean business travelers in economy class
+meanBEC <- data_clean %>%
+  filter(Type.of.Travel == 'Business travel' & Class == "Eco" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+#Mean personal travelers in business class
+meanPBC <- data_clean %>%
+  filter(Type.of.Travel == 'Personal Travel' & Class == "Business" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+#Mean personal travelers in economy class
+meanPEC <- data_clean %>%
+  filter(Type.of.Travel == 'Personal Travel' & Class == "Eco" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+
+```
+
+VISUALISATION Business vs. Personal travel 
+```{r echo = FALSE}
+means_df <- data.frame(Type.of.Travel = c("Business Travel", "Business Travel", "Personal Travel", "Personal Travel"),
+                        Class = c("Business", "Eco", "Business", "Eco"),
+                        Mean = c(meanBBC, meanBEC, meanPBC, meanPEC))
+
+ggplot(means_df, aes(x = Type.of.Travel, y = Mean, fill = Class)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Type of Travel", y = "Satisfaction Level") +
+  ggtitle("Mean Satisfaction Level by Type of Travel and Class") +
+  scale_fill_manual(values = c("Business" = "blue", "Eco" = "red")) +
+  ylim(0, 5)
+```
 
 
 
-``` 
+DATA WRANGLING II 
+Select only passengers that travel for business reasons. 
+```{r echo = FALSE, message = FALSE}
+data_clean <- data_clean %>%  
+  filter(Type.of.Travel == 'Business travel' & Class != 'Eco Plus')
+
+view(data_clean)
+
+```
+
 
 CALCULATIONS
-Compute proprotions and delta's
+Compute proportions and delta's
 
-```{r}
+```{r echo = FALSE, message = FALSE }
 data_clean <- data_clean %>% 
   mutate(proportion_seatcomfort_business = sum(Seat.comfort > 3 & Class == "Business") / sum(Class == "Business"),
          proportion_seatcomfort_economy = sum(Seat.comfort > 3 & Class == "Eco") / sum(Class == "Eco"),
@@ -187,7 +237,7 @@ df_delta <- separate(df_delta, variable, c("name","aspect"), sep = "_")
 
 VISUALISATION
 
-```{r}
+```{r echo = FALSE, message = FALSE}
 # Create plot for data frame 2 (Proportions)
 
 #plot1 <- df_delta%>%
@@ -215,16 +265,21 @@ plot2 <- df_prop %>%
   ggplot(aes(x = aspect, y = proportion, color = class)) +
   geom_point(position = position_dodge(width = 0.5), size = 3) +
   scale_y_continuous(limits = c(0, 1), sec.axis = sec_axis(~., name = "Proportion")) +
-  labs(x = "Aspect", y = "Proportion", color = "Class")+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) 
+  labs(x = "Service", y = "Rating_proportion (good/neutral and bad)", color = "Class")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
 
-
-# Add delta line to plot 2 
+# combine the plots
 
 combined_plot <- plot2 +
-  geom_line(data = df_delta, aes(x = aspect, y = proportion), group = 1, color = "black", linetype = "dashed") +
+  geom_line(data = df_delta, aes(x = aspect, y = proportion, group = 1, color = "proportions_delta"), linetype = "dashed") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25), expand = expansion(mult = c(0, 0.1)))
+```
+
+VIUSALISE FINAL PLOT
+
+```{r}
 
 combined_plot
+
 ```
 
