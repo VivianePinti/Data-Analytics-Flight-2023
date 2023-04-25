@@ -264,15 +264,22 @@ plot1 <- df_delta %>%
 plot2 <- df_prop %>%
   ggplot(aes(x = aspect, y = proportion, color = class)) +
   geom_point(position = position_dodge(width = 0.5), size = 3) +
-  scale_y_continuous(limits = c(0, 1), sec.axis = sec_axis(~., name = "Proportion")) +
+  scale_y_continuous(limits = c(0, 1)) +
   labs(x = "Service", y = "Rating_proportion (good/neutral and bad)", color = "Class")+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
 
-# combine the plots
-
+# combine the plots (without second axis)
 combined_plot <- plot2 +
   geom_line(data = df_delta, aes(x = aspect, y = proportion, group = 1, color = "proportions_delta"), linetype = "dashed") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25), expand = expansion(mult = c(0, 0.1)))
+
+# combine the plots (with second axis)
+combined_plot <- plot2 +
+  geom_line(data = df_delta, aes(x = aspect, y = proportion, group = 1, color = "proportions_delta"), linetype = "dashed") +
+  scale_y_continuous(name = "Proporition",limits = c(0, 1), sec.axis = sec_axis(~., name = "Delta", breaks = seq(0, 0.5, 0.1), labels = paste0(seq(0, 0.5, 0.1)))) +
+  theme(axis.text.y.right = element_text(color = "black"))
+
+combined_plot
 ```
 
 VIUSALISE FINAL PLOT
