@@ -1,0 +1,213 @@
+---
+title: "Visualisation"
+authors: Cosmia, Nina and Viviane
+output: html_document
+date: '2023-04-24'
+---
+Load all necessary packages
+```{r echo = FALSE, message = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(effsize)
+library(dplyr)
+```
+
+
+Read in the data 
+```{r echo = FALSE, message = FALSE}
+data <- read.csv("satisfaction_2015.csv", header = TRUE)
+summary(data)
+```
+
+DATA WRANGLING I
+```{r echo = FALSE, message = FALSE}
+data_clean <- data %>%  
+  select(-c (id,Customer.Type,satisfaction_v2,Departure.Delay.in.Minutes,Arrival.Delay.in.Minutes))  
+  
+#Class as factor + levels 
+data_clean$Class <- factor(data_clean$Class)
+
+class_levels <- levels(data_clean$Class)
+
+data_clean <- data_clean %>%
+  mutate_at(vars(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness), as.numeric)
+
+data_clean <- as_tibble(data_clean)
+```
+
+NA's ANALYSIS
+```{r echo = FALSE}
+#Percentage of NA's for each column 
+data_clean[data_clean == 0] <- NA
+
+na_percentages <- colMeans(is.na(data_clean)) * 100
+
+
+##  Print the results
+cat("Percentage of missing values for each column:\n")
+cat(sprintf("%s: %.2f%%\n", names(na_percentages), na_percentages))
+
+#mean NA
+mean(na_percentages)
+
+```
+
+NA: Remove 
+
+```{r echo = FALSE, message = FALSE}
+data_clean <- data_clean %>% 
+  filter(!is.na(Seat.comfort)) %>% 
+  filter(!is.na(Online.boarding))  %>% 
+  filter(!is.na(On.board.service)) %>% 
+  filter(!is.na(Baggage.handling))  %>% 
+  filter(!is.na(Checkin.service)) %>% 
+  filter(!is.na(Inflight.service))  %>% 
+  filter(!is.na(Inflight.wifi.service)) %>% 
+  filter(!is.na(Departure.Arrival.time.convenient))  %>% 
+  filter(!is.na(Ease.of.Online.booking))  %>% 
+  filter(!is.na(Gate.location)) %>% 
+  filter(!is.na(Food.and.drink))  %>% 
+  filter(!is.na(Inflight.entertainment)) %>% 
+  filter(!is.na(Cleanliness))  %>% 
+  filter(!is.na(Leg.room.service)) 
+```
+
+DATA INSPECTION 
+Personal vs. work travelers
+```{r echo = FALSE, message = FALSE}
+#Mean business travelers in business class
+meanBBC <- data_clean %>%
+  filter(Type.of.Travel == 'Business travel' & Class == "Business" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+#Mean business travelers in economy class
+meanBEC <- data_clean %>%
+  filter(Type.of.Travel == 'Business travel' & Class == "Eco" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+#Mean personal travelers in business class
+meanPBC <- data_clean %>%
+  filter(Type.of.Travel == 'Personal Travel' & Class == "Business" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+#Mean personal travelers in economy class
+meanPEC <- data_clean %>%
+  filter(Type.of.Travel == 'Personal Travel' & Class == "Eco" & Class != 'Eco Plus' ) %>%
+  select(Seat.comfort, Online.boarding, On.board.service, Baggage.handling, Checkin.service, Inflight.service, Inflight.wifi.service, Departure.Arrival.time.convenient, Ease.of.Online.booking, Gate.location, Food.and.drink, Inflight.entertainment, Leg.room.service, Cleanliness) %>%
+  unlist() %>%
+  mean()
+
+
+```
+
+VISUALISATION Business vs. Personal travel 
+```{r echo = FALSE}
+means_df <- data.frame(Type.of.Travel = c("Business Travel", "Business Travel", "Personal Travel", "Personal Travel"),
+                        Class = c("Business", "Eco", "Business", "Eco"),
+                        Mean = c(meanBBC, meanBEC, meanPBC, meanPEC))
+
+ggplot(means_df, aes(x = Type.of.Travel, y = Mean, fill = Class)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Type of Travel", y = "Satisfaction Level") +
+  ggtitle("Mean Satisfaction Level by Type of Travel and Class") +
+  scale_fill_manual(values = c("Business" = "blue", "Eco" = "red")) +
+  ylim(0, 5)
+```
+
+
+
+DATA WRANGLING II 
+Select only passengers that travel for business reasons. 
+```{r echo = FALSE, message = FALSE}
+data_clean <- data_clean %>%  
+  filter(Type.of.Travel == 'Business travel' & Class != 'Eco Plus')
+
+```
+
+
+CALCULATIONS
+Compute proportions and delta's
+
+```{r echo = FALSE, message = FALSE }
+data_prop<- data_clean %>% 
+  mutate(proportion_seatcomfort_business = sum(Seat.comfort > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_seatcomfort_economy = sum(Seat.comfort > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_onlineboarding_business = sum(Online.boarding > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_onlineboarding_economy = sum(Online.boarding > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_onboardserv_business = sum(On.board.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_onboardserv_economy = sum(On.board.service> 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_baggage_business = sum(Baggage.handling > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_baggage_economy = sum(Baggage.handling > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_checkin_business = sum(Checkin.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_checkin_economy = sum(Checkin.service > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_inflightserv_business = sum(Inflight.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_inflightserv_economy = sum(Inflight.service > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_wifi_business = sum(Inflight.wifi.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_wifi_economy = sum(Inflight.wifi.service > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_timeconvenient_business = sum(Departure.Arrival.time.convenient > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_timeconvenient_economy = sum(Departure.Arrival.time.convenient > 3 & Class == "Eco") / sum(Class == "Eco"),
+        proportion_onlinebooking_business = sum(Ease.of.Online.booking > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_onlinebooking_economy = sum(Ease.of.Online.booking > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_gate_business = sum(Gate.location > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_gate_economy = sum(Gate.location > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_fooddrink_business = sum(Food.and.drink> 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_fooddrink_economy = sum(Food.and.drink > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_entertainment_business = sum(Inflight.entertainment > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_entertainment_economy = sum(Inflight.entertainment > 3 & Class == "Eco") / sum(Class == "Eco"),
+        proportion_cleanliness_business = sum(Cleanliness > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_cleanliness_economy = sum(Cleanliness > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_legroom_business = sum(Leg.room.service> 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_legroom_economy = sum(Leg.room.service > 3 & Class == "Eco") / sum(Class == "Eco"))
+
+
+df_1 <- data_prop %>%
+  select(proportion_seatcomfort_business, proportion_seatcomfort_economy, proportion_onlineboarding_business,
+         proportion_onlineboarding_economy, proportion_onboardserv_business, proportion_onboardserv_economy,
+         proportion_baggage_business, proportion_baggage_economy, proportion_checkin_business, proportion_checkin_economy,
+         proportion_inflightserv_business, proportion_inflightserv_economy, proportion_wifi_business, proportion_wifi_economy,
+         proportion_timeconvenient_business, proportion_timeconvenient_economy, proportion_onlinebooking_business, 
+         proportion_onlinebooking_economy, proportion_gate_business, proportion_gate_economy, proportion_fooddrink_business,
+         proportion_fooddrink_economy, proportion_entertainment_business, proportion_entertainment_economy, proportion_cleanliness_business, proportion_cleanliness_economy, proportion_legroom_business,
+proportion_legroom_economy)
+# convert data frame to tidy format
+
+df_prop <- df_1%>%
+slice(1) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "proportion")
+
+
+df_prop<- separate(df_prop, variable, c("name","aspect","class"), sep = "_")
+
+
+```
+
+
+VISUALISATION
+
+
+```{r}
+plot <- df_prop %>%
+  pivot_wider(names_from = class, values_from = proportion) %>%
+  mutate(delta = business - economy, 
+         aspect = factor(aspect, unique(aspect[order(delta, decreasing = FALSE)]))) %>%
+  ggplot() +
+  geom_segment(aes(y= aspect , x = economy,yend = aspect , xend = business)) +
+  geom_point(mapping = aes(y = aspect, x = economy), size = 3) +
+  geom_point(mapping = aes(y = aspect, x = business),size = 3) +
+  scale_x_continuous(limits = c(0, 1)) +
+  labs(x = "Satisfaction Rate", color = "Class")+
+  theme_minimal() + 
+  theme(axis.text.y = element_text(vjust = 1), 
+        axis.title.y = element_blank()) 
+  
+
+plot
+```
+
+
