@@ -136,45 +136,45 @@ Compute proportions and delta's
 
 ```{r echo = FALSE, message = FALSE }
 data_prop<- data_clean %>% 
-  mutate(proportion_seatcomfort_business = sum(Seat.comfort > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_seatcomfort_economy = sum(Seat.comfort > 3 & Class == "Eco") / sum(Class == "Eco"),
-         proportion_onlineboarding_business = sum(Online.boarding > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_onlineboarding_economy = sum(Online.boarding > 3 & Class == "Eco") / sum(Class == "Eco"),
-         proportion_onboardserv_business = sum(On.board.service > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_onboardserv_economy = sum(On.board.service> 3 & Class == "Eco") / sum(Class == "Eco"),
-         proportion_baggage_business = sum(Baggage.handling > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_baggage_economy = sum(Baggage.handling > 3 & Class == "Eco") / sum(Class == "Eco"),
-         proportion_checkin_business = sum(Checkin.service > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_checkin_economy = sum(Checkin.service > 3 & Class == "Eco") / sum(Class == "Eco"),
-         proportion_inflightserv_business = sum(Inflight.service > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_inflightserv_economy = sum(Inflight.service > 3 & Class == "Eco") / sum(Class == "Eco"),
-         proportion_wifi_business = sum(Inflight.wifi.service > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_wifi_economy = sum(Inflight.wifi.service > 3 & Class == "Eco") / sum(Class == "Eco"),
-         proportion_timeconvenient_business = sum(Departure.Arrival.time.convenient > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_timeconvenient_economy = sum(Departure.Arrival.time.convenient > 3 & Class == "Eco") / sum(Class == "Eco"),
-        proportion_onlinebooking_business = sum(Ease.of.Online.booking > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_onlinebooking_economy = sum(Ease.of.Online.booking > 3 & Class == "Eco") / sum(Class == "Eco"),
-         proportion_gate_business = sum(Gate.location > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_gate_economy = sum(Gate.location > 3 & Class == "Eco") / sum(Class == "Eco"),
-         proportion_fooddrink_business = sum(Food.and.drink> 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_fooddrink_economy = sum(Food.and.drink > 3 & Class == "Eco") / sum(Class == "Eco"),
-         proportion_entertainment_business = sum(Inflight.entertainment > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_entertainment_economy = sum(Inflight.entertainment > 3 & Class == "Eco") / sum(Class == "Eco"),
-        proportion_cleanliness_business = sum(Cleanliness > 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_cleanliness_economy = sum(Cleanliness > 3 & Class == "Eco") / sum(Class == "Eco"),
-         proportion_legroom_business = sum(Leg.room.service> 3 & Class == "Business") / sum(Class == "Business"),
-         proportion_legroom_economy = sum(Leg.room.service > 3 & Class == "Eco") / sum(Class == "Eco"))
+  mutate(proportion_SeatComfort_business = sum(Seat.comfort > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_SeatComfort_economy = sum(Seat.comfort > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_OnlineBoarding_business = sum(Online.boarding > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_OnlineBoarding_economy = sum(Online.boarding > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_OnboardingService_business = sum(On.board.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_OnboardingService_economy = sum(On.board.service> 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_BaggageHandling_business = sum(Baggage.handling > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_BaggageHandling_economy = sum(Baggage.handling > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_CheckIn_business = sum(Checkin.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_CheckIn_economy = sum(Checkin.service > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_InflightService_business = sum(Inflight.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_InflightService_economy = sum(Inflight.service > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_Wifi_business = sum(Inflight.wifi.service > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_Wifi_economy = sum(Inflight.wifi.service > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_TimeConvenience_business = sum(Departure.Arrival.time.convenient > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_TimeConvenience_economy = sum(Departure.Arrival.time.convenient > 3 & Class == "Eco") / sum(Class == "Eco"),
+        proportion_OnlineBooking_business = sum(Ease.of.Online.booking > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_OnlineBooking_economy = sum(Ease.of.Online.booking > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_GateLocation_business = sum(Gate.location > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_GateLocation_economy = sum(Gate.location > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_FoodDrink_business = sum(Food.and.drink> 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_FoodDrink_economy = sum(Food.and.drink > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_Entertainment_business = sum(Inflight.entertainment > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_Entertainment_economy = sum(Inflight.entertainment > 3 & Class == "Eco") / sum(Class == "Eco"),
+        proportion_Cleanliness_business = sum(Cleanliness > 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_Cleanliness_economy = sum(Cleanliness > 3 & Class == "Eco") / sum(Class == "Eco"),
+         proportion_Legroom_business = sum(Leg.room.service> 3 & Class == "Business") / sum(Class == "Business"),
+         proportion_Legroom_economy = sum(Leg.room.service > 3 & Class == "Eco") / sum(Class == "Eco"))
 
 
 df_1 <- data_prop %>%
-  select(proportion_seatcomfort_business, proportion_seatcomfort_economy, proportion_onlineboarding_business,
-         proportion_onlineboarding_economy, proportion_onboardserv_business, proportion_onboardserv_economy,
-         proportion_baggage_business, proportion_baggage_economy, proportion_checkin_business, proportion_checkin_economy,
-         proportion_inflightserv_business, proportion_inflightserv_economy, proportion_wifi_business, proportion_wifi_economy,
-         proportion_timeconvenient_business, proportion_timeconvenient_economy, proportion_onlinebooking_business, 
-         proportion_onlinebooking_economy, proportion_gate_business, proportion_gate_economy, proportion_fooddrink_business,
-         proportion_fooddrink_economy, proportion_entertainment_business, proportion_entertainment_economy, proportion_cleanliness_business, proportion_cleanliness_economy, proportion_legroom_business,
-proportion_legroom_economy)
+  select(proportion_SeatComfort_business, proportion_SeatComfort_economy, proportion_OnlineBoarding_business,
+         proportion_OnlineBoarding_economy, proportion_OnboardingService_business, proportion_OnboardingService_economy,
+         proportion_BaggageHandling_business, proportion_BaggageHandling_economy, proportion_CheckIn_business, proportion_CheckIn_economy,
+         proportion_InflightService_business, proportion_InflightService_economy, proportion_Wifi_business, proportion_Wifi_economy,
+         proportion_TimeConvenience_business, proportion_TimeConvenience_economy, proportion_OnlineBooking_business, 
+         proportion_OnlineBooking_economy, proportion_GateLocation_business, proportion_GateLocation_economy, proportion_FoodDrink_business,
+         proportion_FoodDrink_economy, proportion_Entertainment_business, proportion_Entertainment_economy, proportion_Cleanliness_business, proportion_Cleanliness_economy, proportion_Legroom_business,
+proportion_Legroom_economy)
 # convert data frame to tidy format
 
 df_prop <- df_1%>%
@@ -197,14 +197,17 @@ plot <- df_prop %>%
   mutate(delta = business - economy, 
          aspect = factor(aspect, unique(aspect[order(delta, decreasing = FALSE)]))) %>%
   ggplot() +
-  geom_segment(aes(y= aspect , x = economy,yend = aspect , xend = business)) +
-  geom_point(mapping = aes(y = aspect, x = economy), size = 3) +
-  geom_point(mapping = aes(y = aspect, x = business),size = 3) +
+  geom_segment(aes(y= aspect , x = economy,yend = aspect , xend = business, color= aspect), size= 1.2) +
+  scale_color_manual(values=c('red','red', "red", "grey89", "grey89", "grey89","grey89","grey89","grey89","grey89","grey89","green4", "green4", "green4" ))+
+  geom_point(mapping = aes(y = aspect, x = economy), size = 3, shape=20) +
+  geom_point(mapping = aes(y = aspect, x = business),size = 3, shape=17) +
   scale_x_continuous(limits = c(0, 1)) +
   labs(x = "Satisfaction Rate", color = "Class")+
   theme_minimal() + 
   theme(axis.text.y = element_text(vjust = 1), 
-        axis.title.y = element_blank()) 
+        axis.title.y = element_blank(),
+        legend.text = element_blank(), 
+        legend.position = "none")
   
 
 plot
