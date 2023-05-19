@@ -8,7 +8,6 @@ Load all necessary packages
 ```{r echo = FALSE, message = FALSE}
 library(tidyverse)
 library(ggplot2)
-library(effsize)
 library(dplyr)
 ```
 
@@ -213,4 +212,36 @@ plot <- df_prop %>%
 plot
 ```
 
+
+Visualisation - Improvements
+```{r}
+
+# Set fonds and size 
+
+
+font_family <- "sans-serif"
+font_size <- 14
+
+
+
+plot2 <- df_prop %>%
+  pivot_wider(names_from = class, values_from = proportion) %>%
+  mutate(delta = business - economy, 
+         aspect = factor(aspect, unique(aspect[order(delta, decreasing = FALSE)]))) %>%
+  ggplot() +
+  geom_segment(aes(y= aspect , x = economy,yend = aspect , xend = business, color= aspect), size= 1.2) +
+  scale_color_manual(values=c('red','red', "red", "grey89", "grey89", "grey89","grey89","grey89","grey89","grey89","grey89","green4", "green4", "green4" ))+
+  geom_point(mapping = aes(y = aspect, x = economy), size = 5, shape=20) +
+  geom_point(mapping = aes(y = aspect, x = business),size = 5, shape=17) +
+  scale_x_continuous(limits = c(0, 1)) +
+  labs(x = "Satisfaction Rate", color = "Class")+
+  theme_minimal() + 
+  theme(axis.text.y = element_text(vjust = 1, size = font_size, family = font_family), 
+        axis.title.y = element_blank(),
+        legend.text = element_blank(), 
+        legend.position = "none",
+text = element_text(size = font_size, family = font_family))
+
+plot2
+```
 
