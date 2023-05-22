@@ -234,6 +234,7 @@ font_add_google(name = 'Quicksand', family = 'Quicksand')
 NEW Visualistion!! 
 
 ```{r}
+
 library(stringr)
 font_size <- 20
 background_color <- "#b6d5f0"
@@ -275,7 +276,62 @@ plot <- df_prop %>%
 
 plot
 
+library(ggplot2)
+ggsave(plot = plot, filename = "Final_Plot.png", width = 8, height = 6)
+```
+Viviane Ausprobieren
+```{r}
+.libPaths()
+
+
+
+install.packages("extrafont")
+library(extrafont)
+Quicksand <- font_import(paths = "Applications/R/Quicksand/Quicksand-VariableFont_wght.ttf")
+
+
+
+library(stringr)
+font_size <- 20
+background_color <- "#b6d5f0"
+
+# Define the color palette
+font_size <- 20
+background_color <- "#b6d5f0"
+
+# Define the color palette
+num_colors <- 14
+color_palette <- colorRampPalette(c("red", "orange", "green3"))(num_colors)
+
+insert_space <- function(label) {
+  str_replace_all(label, "([A-Z])", " \\1")}
+
+
+plot <- df_prop %>%
+  pivot_wider(names_from = class, values_from = proportion) %>%
+  mutate(delta = business - economy, 
+         aspect = factor(aspect, unique(aspect[order(delta, decreasing = FALSE)]))) %>%
+  ggplot() +
+  geom_segment(aes(y = aspect, x = economy, yend = aspect, xend = business, color = aspect), size = 1.2) +
+  scale_color_manual(values = color_palette) +
+  geom_point(mapping = aes(y = aspect, x = economy, color = aspect), size = 5, shape = 20) +
+  geom_point(mapping = aes(y = aspect, x = business, color = aspect), size = 5, shape = 17) +
+  scale_x_continuous(limits = c(0, 1)) +
+  labs(x = "Satisfaction Rate") +
+  scale_y_discrete(labels = insert_space)+
+  theme_minimal() + 
+theme(
+  axis.text.y = element_text(family = "Quicksand", vjust = 1, size = font_size),
+  axis.title.y = element_blank(),
+  legend.text = element_blank(),
+  legend.position = "none",
+  plot.title = element_text(family = "Quicksand", size = font_size),
+  plot.background = element_rect(fill = background_color)
+)
+
+
+
+plot
+
 
 ```
-
-
